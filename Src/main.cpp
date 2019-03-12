@@ -27,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "NS_energyShield2.h"
 
 /* USER CODE END Includes */
 
@@ -49,6 +50,7 @@
 
 /* USER CODE BEGIN PV */
 
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,7 +71,6 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,6 +97,8 @@ int main(void)
   MX_LPTIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+    if (ES2_readVMPP() != -1)
+		 ES2_setVMPP(-1, 1); // Disable VMPP regulation to allow charging from any power supply (7V - 23V) and prevent excessive EEPROM writes
 
   /* USER CODE END 2 */
 
