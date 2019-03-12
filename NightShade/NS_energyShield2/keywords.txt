@@ -1,0 +1,58 @@
+#######################################
+# Syntax Coloring Map For energyShield2 Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+NS_energyShield2	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+
+# RTC
+setTimeDate	KEYWORD2
+readClock	KEYWORD2
+second	KEYWORD2
+minute	KEYWORD2
+hour	KEYWORD2
+dayOfMonth	KEYWORD2
+dayOfWeek	KEYWORD2
+month	KEYWORD2
+year	KEYWORD2
+clearAlarms	KEYWORD2
+sleepSeconds	KEYWORD2
+
+# Solar
+setVMPP	KEYWORD2
+readVMPP	KEYWORD2
+inputVoltage	KEYWORD2
+
+# Battery
+batteryVoltage	KEYWORD2
+batteryCurrent	KEYWORD2
+temperature	KEYWORD2
+SOC	KEYWORD2
+fullChargeCapacity	KEYWORD2
+remainingCapacity	KEYWORD2
+batteryAlert	KEYWORD2
+
+# Legacy
+voltage	KEYWORD2
+Vadp	KEYWORD2
+current	KEYWORD2
+charge	KEYWORD2
+percent	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+# TWI Addresses
+RTC_SLAVE_ADDR	LITERAL1
+DAC_SLAVE_ADDR	LITERAL1
+FG_SLAVE_ADDR	LITERAL1

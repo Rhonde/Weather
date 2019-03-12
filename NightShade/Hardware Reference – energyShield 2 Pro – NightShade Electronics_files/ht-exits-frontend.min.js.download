@@ -1,0 +1,1 @@
+jQuery(document).ready(function(a){"use strict";console.log("ht-exits-frontend.js loaded"),a("a.hkb_widget_exit__btn").each(function(b){var c=a(this),d=c.attr("data-ht-kb-exit-href");c.attr("href",d)})});
