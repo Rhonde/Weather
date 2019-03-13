@@ -49,7 +49,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t  es_timeDate[7];
+uint16_t es_batteryCapacity;
 
 /* USER CODE END PV */
 

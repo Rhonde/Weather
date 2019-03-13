@@ -16,6 +16,13 @@
 #ifndef NS_ENERGYSHIELD2_H
 #define NS_ENERGYSHIELD2_H
 
+#include "main.h"
+#include "i2c.h"
+
+extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
+extern I2C_HandleTypeDef hi2c3;
+
 // Define RTC TWI slave address
 #ifndef RTC_SLAVE_ADDR 
 #define RTC_SLAVE_ADDR 0x51
@@ -66,9 +73,8 @@ void	ES2_writeAlarms(long alarmTimeSeconds);
 void	ES2_sleepSeconds(long timeInSeconds);
 		
 // Solar Functions
-void 	ES2_setVMPP(int MPP_Voltage_mV, bool writeEEPROM);
+void 	ES2_setVMPP(int MPP_Voltage_mV, uint8_t writeEEPROM);
 int		ES2_readVMPP();
-uint16_t ES2_inputVoltage();
 uint16_t ES2_inputVoltage(uint8_t pin);
 				
 // Fuel gauge functions
@@ -92,8 +98,6 @@ int		 ES2_Vadp(int pin);
 	
 extern uint8_t  es_timeDate[7];
 extern uint16_t es_batteryCapacity;
-};
-
 
 
 #endif
