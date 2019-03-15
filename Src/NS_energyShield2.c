@@ -10,6 +10,8 @@
 
  *****************************************/
 
+// Ported to STM32 HAL and convert to C
+// Archer Lawrence March 15, 2019
 
 #include "NS_energyShield2.h"
 #include "NS_ES2_Utilities.h"
@@ -171,13 +173,13 @@ void ES2_sleepSeconds(long timeInSeconds)
 		// Get control of EN net
 		ES2_clearAlarms();
 		ES2_writeByte(RTC_SLAVE_ADDR, 0x0E, encodeBCD(ES2_dayOfMonth()));
-		delay(1500);
+		HAL_Delay(150);
 
 		// Write alarm registers
 		ES2_writeAlarms(timeInSeconds);
 
 		// Sleep
-		ES2_writeByte(RTC_SLAVE_ADDR, 0x01, B10000111);
+		ES2_writeByte(RTC_SLAVE_ADDR, 0x01, 0x87);	//  B10000111);
 	}
 }
 
@@ -201,7 +203,7 @@ int ES2_readVMPP()
 }
 
 // Set regulated MPP voltage of solar panel and writes to EEPROM
-void ES2_setVMPP(int MPP_Voltage_mV, uint_8 writeEEPROM)
+void ES2_setVMPP(int MPP_Voltage_mV, uint8_t writeEEPROM)
 {
 	uint8_t DAC_setting, Control, Hbyte, Lbyte, data[2];
 	uint8_t tmp[3];
@@ -240,7 +242,7 @@ void ES2_setVMPP(int MPP_Voltage_mV, uint_8 writeEEPROM)
 		tmp[2] = Lbyte;
 
 		// Write value to DAC
-		HAL_I2C_Master_Tranmit(&hi2c1, DAC_SLAVE_ADDR<<1, data, 3, 100);
+		HAL_I2C_Master_Transmit(&hi2c1, DAC_SLAVE_ADDR<<1, tmp, 3, 100);
 	}
 
 	return;
@@ -334,7 +336,7 @@ int ES2_batteryAlert(uint8_t alarmSOC)
 		// Compute new checksum
 		tempCheckSum = 0xFF - oldCheckSum;
 
-		oldOpConfig = readCommand(FG_SLAVE_ADDR, 0x40);
+		oldOpConfig = ES2_readCommand(FG_SLAVE_ADDR, 0x40);
 
 		newOpConfig = oldOpConfig | 0x0004; // Enable BATLOWEN Bit
 
@@ -420,13 +422,13 @@ int ES2_batteryAlert(uint8_t alarmSOC)
 // Returns solar/adapter input voltage in mV
 uint16_t ES2_inputVoltage(uint8_t analogChannel)
 {
-	uint16_t voltage;
+	uint16_t voltage = 0;
 
 	// Oversample ADC to achieve 12-bit measurement
-	for (int i = 0; i < 16; i++)
-		voltage += ES2_analogRead(analogChannel);
-	voltage = voltage >> 2;
-	voltage = (unsigned long) 25000 * voltage / 4095;
+//	for (int i = 0; i < 16; i++)
+//		voltage += ES2_analogRead(analogChannel);
+//	voltage = voltage >> 2;
+//	voltage = (unsigned long) 25000 * voltage / 4095;
 
 	return voltage;
 }
