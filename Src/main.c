@@ -29,6 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "NS_energyShield2.h"
+#include "stdio.h"
 
 /* USER CODE END Includes */
 

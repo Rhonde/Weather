@@ -11,8 +11,9 @@
  *****************************************/
 
 // Ported to STM32 HAL and convert to C
-// Archer Lawrence March 15, 2019
+// Archer March 15, 2019
 
+#include "adc.h"
 #include "NS_energyShield2.h"
 #include "NS_ES2_Utilities.h"
 
@@ -424,11 +425,21 @@ uint16_t ES2_inputVoltage(uint8_t analogChannel)
 {
 	uint16_t voltage = 0;
 
-	// Oversample ADC to achieve 12-bit measurement
-//	for (int i = 0; i < 16; i++)
-//		voltage += ES2_analogRead(analogChannel);
-//	voltage = voltage >> 2;
-//	voltage = (unsigned long) 25000 * voltage / 4095;
+	if(analogChannel == 0) 			// PA0 is configured ADC1_IN5
+	{
+		 HAL_ADC_Start(&hadc1);
+
+		// Oversample ADC to achieve 12-bit measurement
+		for (int i = 0; i < 16; i++)
+		{
+			if (HAL_ADC_PollForConversion(&hadc1, 1000) == HAL_OK)
+			{
+				voltage += HAL_ADC_GetValue(&hadc1);
+			}
+		}
+		voltage = voltage >> 2;
+		voltage = (unsigned long) (25000UL * voltage) / 4095;
+	}
 
 	return voltage;
 }

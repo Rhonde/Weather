@@ -52,6 +52,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
+#include "stm32l4xx.h"
 
 
 /* Variables */
@@ -102,12 +103,17 @@ return len;
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-	int DataIdx;
+//	int DataIdx;
+//
+//	for (DataIdx = 0; DataIdx < len; DataIdx++)
+//	{
+//		__io_putchar(*ptr++);
+//	}
 
-	for (DataIdx = 0; DataIdx < len; DataIdx++)
-	{
-		__io_putchar(*ptr++);
-	}
+
+	for(int i = 0; i < len; i++)
+		ITM_SendChar((*ptr++));
+
 	return len;
 }
 
