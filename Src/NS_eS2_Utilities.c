@@ -16,7 +16,7 @@
 // Write one byte via TWI
 void ES2_writeByte(uint8_t slaveAddress, uint8_t registerAddress, uint8_t data)
 {
-	HAL_I2C_Mem_Write(&hi2c1, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, &data, 1, 100);
+	HAL_I2C_Mem_Write(&hi2c3, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, &data, 1, 100);
 
 	HAL_Delay(ES2_DELAY);
 
@@ -28,7 +28,7 @@ uint8_t ES2_readByte(uint8_t slaveAddress, uint8_t registerAddress)
 {
 	uint8_t data;
 
-	HAL_I2C_Mem_Read(&hi2c1, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, &data, 1, 100);
+	HAL_I2C_Mem_Read(&hi2c3, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, &data, 1, 100);
 	HAL_Delay(ES2_DELAY);
 
 	return data;
@@ -42,7 +42,7 @@ void ES2_writeCommand(uint8_t slaveAddress, uint8_t registerAddress, uint16_t da
 	buf[0] = dataWord & 0xFF;
 	buf[1] = dataWord >> 8;
 
-	HAL_I2C_Mem_Write(&hi2c1, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, buf, 2, 100);
+	HAL_I2C_Mem_Write(&hi2c3, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, buf, 2, 100);
 
 	HAL_Delay(ES2_DELAY);
 
@@ -55,7 +55,7 @@ uint16_t ES2_readCommand(uint8_t slaveAddress, uint8_t registerAddress)
 	uint16_t dataWord;
 	uint8_t buf[2];
 
-	HAL_I2C_Mem_Read(&hi2c1, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, buf, 2, 100);
+	HAL_I2C_Mem_Read(&hi2c3, slaveAddress << 1, registerAddress, I2C_MEMADD_SIZE_8BIT, buf, 2, 100);
 
 	HAL_Delay(ES2_DELAY);
 
@@ -75,7 +75,7 @@ uint16_t ES2_readSubCommand(uint8_t slaveAddress, uint16_t controlData)
 	buf[1] = controlData & 0xFF;
 	buf[2] = controlData >> 8;
 
-	HAL_I2C_Master_Transmit(&hi2c1, slaveAddress << 1, buf, 3, 100);
+	HAL_I2C_Master_Transmit(&hi2c3, slaveAddress << 1, buf, 3, 100);
 
 	dataWord = ES2_readCommand(slaveAddress, 0x00);
 

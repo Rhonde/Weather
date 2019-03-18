@@ -35,7 +35,7 @@ void ES2_setTimeDate(uint8_t second, uint8_t minute, uint8_t hour,
 
 	// Program RTC registers
 	HAL_Delay(15);
-	HAL_I2C_Mem_Write(&hi2c1, RTC_SLAVE_ADDR << 1, 0x04, I2C_MEMADD_SIZE_8BIT, timeDate, 7, 100);
+	HAL_I2C_Mem_Write(&hi2c3, RTC_SLAVE_ADDR << 1, 0x04, I2C_MEMADD_SIZE_8BIT, timeDate, 7, 100);
 	//device address 0x40 in the data sheet is shifted 1-bit to the left.
 	//7 bytes are transmitting to the slave RTC
 
@@ -51,7 +51,7 @@ void ES2_readClock()
 	HAL_Delay(20);
 
 	// read from register 4 to 0xA from RTC
-	HAL_I2C_Mem_Read(&hi2c1, RTC_SLAVE_ADDR << 1, 0x04, I2C_MEMADD_SIZE_8BIT, es_timeDate, 7, 100);
+	HAL_I2C_Mem_Read(&hi2c3, RTC_SLAVE_ADDR << 1, 0x04, I2C_MEMADD_SIZE_8BIT, es_timeDate, 7, 100);
 
 	// Convert seconds, minutes, hours, day-of-the-month, and year from BCD to binary (skipping day-of-the-week)
 	for (i = 0; i < 7; i++)
@@ -114,7 +114,7 @@ void ES2_clearAlarms()
 		tmp[i] = 0xff;
 
 	HAL_Delay(15);
-	HAL_I2C_Mem_Write(&hi2c1, RTC_SLAVE_ADDR << 1, 0x0B, I2C_MEMADD_SIZE_8BIT, tmp, 5, 100);
+	HAL_I2C_Mem_Write(&hi2c3, RTC_SLAVE_ADDR << 1, 0x0B, I2C_MEMADD_SIZE_8BIT, tmp, 5, 100);
 
 	return;
 }
@@ -144,7 +144,7 @@ void ES2_writeAlarms(long alarmTimeSeconds)
 
 		HAL_Delay(5);
 
-		HAL_I2C_Mem_Read(&hi2c1, RTC_SLAVE_ADDR << 1, 0x0B, I2C_MEMADD_SIZE_8BIT, tmp, 5, 100);
+		HAL_I2C_Mem_Read(&hi2c3, RTC_SLAVE_ADDR << 1, 0x0B, I2C_MEMADD_SIZE_8BIT, tmp, 5, 100);
 
 		for (int i = 0; i < 5; ++i)
 		{
@@ -190,7 +190,7 @@ int ES2_readVMPP()
 	uint8_t data[2];
 	do
 	{
-		HAL_I2C_Master_Receive(&hi2c1, DAC_SLAVE_ADDR<<1, data, 2, 100);
+		HAL_I2C_Master_Receive(&hi2c3, DAC_SLAVE_ADDR<<1, data, 2, 100);
 	} while (!(data[0] & 0b10000000));
 
 	if (data[0] & 0b00000110)
@@ -211,7 +211,7 @@ void ES2_setVMPP(int MPP_Voltage_mV, uint8_t writeEEPROM)
 
 	do
 	{
-		HAL_I2C_Master_Receive(&hi2c1, DAC_SLAVE_ADDR<<1, data, 2, 100);
+		HAL_I2C_Master_Receive(&hi2c3, DAC_SLAVE_ADDR<<1, data, 2, 100);
 	} while (!(data[0] & 0b10000000));
 
 
@@ -243,7 +243,7 @@ void ES2_setVMPP(int MPP_Voltage_mV, uint8_t writeEEPROM)
 		tmp[2] = Lbyte;
 
 		// Write value to DAC
-		HAL_I2C_Master_Transmit(&hi2c1, DAC_SLAVE_ADDR<<1, tmp, 3, 100);
+		HAL_I2C_Master_Transmit(&hi2c3, DAC_SLAVE_ADDR<<1, tmp, 3, 100);
 	}
 
 	return;
