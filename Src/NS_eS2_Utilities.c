@@ -11,7 +11,8 @@
  *****************************************/
 #include "NS_eS2_Utilities.h"
 
-#define ES2_DELAY 100
+// #define ES2_DELAY 100
+#define ES2_DELAY 10
 
 // Write one byte via TWI
 void ES2_writeByte(uint8_t slaveAddress, uint8_t registerAddress, uint8_t data)
