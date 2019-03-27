@@ -122,6 +122,18 @@
 							<tool id="com.atollic.truestudio.ar.base.1415376184" name="Archiver" superClass="com.atollic.truestudio.ar.base" />
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.atollic.truestudio.exe.debug.1518366166.1799423770" name="NS_energyShield2.c" rcbsApplicability="disable" resourcePath="Src/NS_energyShield2.c" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1733685105">
+						<tool id="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1733685105" name="C Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447">
+							<option id="com.atollic.truestudio.exe.debug.toolchain.gcc.optimization.level.1411353089" name="Optimization Level" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.optimization.level" useByScannerDiscovery="false" value="com.atollic.truestudio.gcc.optimization.level.0g" valueType="enumerated" />
+							<inputType id="com.atollic.truestudio.gcc.input.2138330617" superClass="com.atollic.truestudio.gcc.input" />
+						</tool>
+						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.2091245057" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.177556193" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths="" />
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1521967235" name="Resource Custom Build Step Output Type" />
+						</tool>
+					</fileInfo>
 					<fileInfo id="com.atollic.truestudio.exe.debug.311825581.983937533" name="" rcbsApplicability="disable" resourcePath="nofile" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1976695455">
 						<tool id="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1976695455" name="C Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447">
 							<inputType id="com.atollic.truestudio.gcc.input.1274347818" superClass="com.atollic.truestudio.gcc.input" />

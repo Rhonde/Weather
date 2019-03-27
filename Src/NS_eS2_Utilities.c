@@ -12,7 +12,7 @@
 #include "NS_eS2_Utilities.h"
 
 // #define ES2_DELAY 100
-#define ES2_DELAY 10
+#define ES2_DELAY 1
 
 // Write one byte via TWI
 void ES2_writeByte(uint8_t slaveAddress, uint8_t registerAddress, uint8_t data)
@@ -118,7 +118,7 @@ int ES2_setupFuelGauge(uint8_t slaveAddress, uint16_t newDesignCapacity_mAh,
 		// Unseal
 		ES2_writeCommand(slaveAddress, 0x00, 0x8000);
 		ES2_writeCommand(slaveAddress, 0x00, 0x8000);
-		HAL_Delay(10);
+//		HAL_Delay(10);
 	} while (ES2_checkIfSealed(slaveAddress));
 
 	//Change to CONFIG UPDATE mode

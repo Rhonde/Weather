@@ -34,7 +34,7 @@ void ES2_setTimeDate(uint8_t second, uint8_t minute, uint8_t hour,
 	timeDate[6] = encodeBCD(year);
 
 	// Program RTC registers
-	HAL_Delay(15);
+//	HAL_Delay(15);
 	HAL_I2C_Mem_Write(&hi2c3, RTC_SLAVE_ADDR << 1, 0x04, I2C_MEMADD_SIZE_8BIT, timeDate, 7, 100);
 	//device address 0x40 in the data sheet is shifted 1-bit to the left.
 	//7 bytes are transmitting to the slave RTC
@@ -48,7 +48,7 @@ void ES2_readClock()
 	int i = 0;
 
 	// Read time and date
-	HAL_Delay(20);
+//	HAL_Delay(20);
 
 	// read from register 4 to 0xA from RTC
 	HAL_I2C_Mem_Read(&hi2c3, RTC_SLAVE_ADDR << 1, 0x04, I2C_MEMADD_SIZE_8BIT, es_timeDate, 7, 100);
@@ -113,7 +113,7 @@ void ES2_clearAlarms()
 	for(int i = 0; i < 5; i++)
 		tmp[i] = 0xff;
 
-	HAL_Delay(15);
+	//HAL_Delay(15);
 	HAL_I2C_Mem_Write(&hi2c3, RTC_SLAVE_ADDR << 1, 0x0B, I2C_MEMADD_SIZE_8BIT, tmp, 5, 100);
 
 	return;
@@ -142,7 +142,7 @@ void ES2_writeAlarms(long alarmTimeSeconds)
 		if (alarmTimeSeconds >= 86400)
 			ES2_writeByte(RTC_SLAVE_ADDR, 0x0F, dayAlarm);
 
-		HAL_Delay(5);
+//		HAL_Delay(5);
 
 		HAL_I2C_Mem_Read(&hi2c3, RTC_SLAVE_ADDR << 1, 0x0B, I2C_MEMADD_SIZE_8BIT, tmp, 5, 100);
 
@@ -307,11 +307,11 @@ int ES2_batteryAlert(uint8_t alarmSOC)
 		// Unseal
 		ES2_writeCommand(FG_SLAVE_ADDR, 0x00, 0x8000);
 		ES2_writeCommand(FG_SLAVE_ADDR, 0x00, 0x8000);
-		HAL_Delay(10);
+//		HAL_Delay(10);
 		for (int x = 0; x < 100; ++x)
 			if (!ES2_checkIfSealed(FG_SLAVE_ADDR))
 				break;
-		HAL_Delay(500);
+		HAL_Delay(50);
 	} while (ES2_checkIfSealed(FG_SLAVE_ADDR));
 
 	//Change to CONFIG UPDATE mode
@@ -425,20 +425,17 @@ uint16_t ES2_inputVoltage(uint8_t analogChannel)
 {
 	uint16_t voltage = 0;
 
-	if(analogChannel == 0) 			// PA0 is configured ADC1_IN5
+	if (analogChannel == 0) 			// PA0 is configured ADC1_IN5
 	{
-		 HAL_ADC_Start(&hadc1);
-
-		// Oversample ADC to achieve 12-bit measurement
-		for (int i = 0; i < 16; i++)
+		HAL_ADC_Start(&hadc1);
+		for (int ix = 0; ix < 4; ix++)
 		{
-			if (HAL_ADC_PollForConversion(&hadc1, 1000) == HAL_OK)
+			if (HAL_ADC_PollForConversion(&hadc1, 4000) == HAL_OK)
 			{
 				voltage += HAL_ADC_GetValue(&hadc1);
 			}
 		}
-		voltage = voltage >> 2;
-		voltage = (unsigned long) (25000UL * voltage) / 4095;
+		voltage = (unsigned long) (voltage / 4) * 5;
 	}
 
 	return voltage;

@@ -121,9 +121,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		// Read values from energyShield2
-		int iBattVolt = ES2_batteryVoltage() / 1000;
-		int nBattVolt = ES2_batteryVoltage() % 1000;
-		float batteryVoltage = (float) ES2_batteryVoltage() / 1000.0;
+		int batVal = ES2_batteryVoltage();
+		int iBattVolt =  batVal / 1000;
+		int nBattVolt = batVal % 1000;
+		float batteryVoltage = (float) batVal / 1000.0;
 
 		float batteryCurrent = (float) ES2_batteryCurrent() / 1000.0;
 		uint16_t fullCapacity = ES2_fullChargeCapacity();
@@ -142,12 +143,12 @@ int main(void)
 		printf("Input Voltage      = %f V\n", inputVoltage);
 		printf("Temperature        = %f F\n", (temperature * 9.0 / 5.0) + 32.0);
 
-		// Read time and date from energyShield and store locally
-		// Local values will not update until readClock is called again
+	// Read time and date from energyShield and store locally
+	// Local values will not update until readClock is called again
 		ES2_readClock();
 
 		// Print time and date from locally stored values
-		printf("\n\t %d:%d:%d \t %d-%d-%d\n", ES2_hour(), ES2_minute(),
+		printf("\n\tTime:: %d:%d:%d \t Date:: %d-%d-%d\n", ES2_hour(), ES2_minute(),
 				ES2_second(), ES2_month(), ES2_dayOfMonth(), ES2_year());
 
 		// Print carriage return to start new line
@@ -177,7 +178,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 2;
+  RCC_OscInitStruct.PLL.PLLM = 1;
   RCC_OscInitStruct.PLL.PLLN = 10;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
@@ -195,7 +196,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -209,7 +210,7 @@ void SystemClock_Config(void)
   PeriphClkInit.Lptim1ClockSelection = RCC_LPTIM1CLKSOURCE_PCLK;
   PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
   PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSI;
-  PeriphClkInit.PLLSAI1.PLLSAI1M = 2;
+  PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
   PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
   PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
   PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
