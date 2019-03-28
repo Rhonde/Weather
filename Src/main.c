@@ -29,6 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "NS_energyShield2.h"
+#include "SFE_BMP180.h"
 #include "stdio.h"
 
 /* USER CODE END Includes */
@@ -102,7 +103,14 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-	if (ES2_begin())
+  	BMP_Begin(&hi2c3);
+  	byte wait = BMP_StartTemperature(&hi2c3);
+  	HAL_Delay(wait);
+  	double temp = 0.0;
+  	BMP_GetTemperature(&hi2c3, &temp);
+  	printf("MAIN: BMP180 temp = %f\n", temp);
+
+    if (ES2_begin())
 	{
 		printf("! ES2 ERROR - Initialization Failed !");
 		while (1)
