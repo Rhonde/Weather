@@ -10,11 +10,13 @@
   
 *****************************************/
 
-#include <Wire.h>
-#include "Arduino.h"
 
 #ifndef NS_ENERGYSHIELD2_H
 #define NS_ENERGYSHIELD2_H
+
+#include <stdio.h>
+#include <stm32l4xx_hal.h>
+
 
 // Define RTC TWI slave address
 #ifndef RTC_SLAVE_ADDR 

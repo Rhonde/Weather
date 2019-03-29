@@ -13,9 +13,9 @@
 // Ported to STM32 HAL and convert to C
 // Archer March 15, 2019
 
+#include <stdio.h>
 #include "adc.h"
 #include "NS_energyShield2.h"
-#include "NS_ES2_Utilities.h"
 
 
 // Set RTC time and date

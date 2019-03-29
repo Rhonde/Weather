@@ -118,10 +118,6 @@ void Error_Handler(void);
 typedef unsigned int word;
 typedef unsigned char byte;
 
-typedef unsigned char bool;
-#define false 0
-#define true !false
-
 #define bit(b) (1UL << (b))
 
 
