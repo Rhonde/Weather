@@ -35,30 +35,30 @@ bool BMP_GetTemperature(I2C_HandleTypeDef *pI2C, double *T);
 // places returned value in T variable (deg C)
 // returns 1 for success, 0 for fail
 
-bool BMP_StartPressure(I2C_HandleTypeDef *pI2C, char oversampling);
+int8_t BMP_StartPressure(I2C_HandleTypeDef *pI2C, int8_t oversampling);
 // command BMP180 to start a pressure measurement
 // over-sampling: 0 - 3 for over-sampling value
 // returns (number of ms to wait) for success, 0 for fail
 
-bool BMP_GetPressure(I2C_HandleTypeDef *pI2C, double *P, double *T);
+bool BMP_GetPressure(I2C_HandleTypeDef *pI2C, double *pressure, double temp);
 // return absolute pressure measurement from previous startPressure command
-// note: requires previous temperature measurement in variable T
-// places returned value in P variable (mBar)
+// note: requires previous temperature measurement in variable temp
+// places returned value in 'pressure' variable (mBar)
 // returns 1 for success, 0 for fail
 
-double BMP_Sealevel(I2C_HandleTypeDef *pI2C, double P, double A);
+double BMP_SeaLevel(double pressure, double altitude);
 // convert absolute pressure to sea-level pressure (as used in weather data)
-// P: absolute pressure (milliBar)
-// A: current altitude (meters)
+// pressure: absolute pressure (milliBar)
+// altitude: current altitude (meters)
 // returns sea level pressure in mBar
 
-double BMP_Altitude(I2C_HandleTypeDef *pI2C, double P, double P0);
+double BMP_Altitude(double P, double P0);
 // convert absolute pressure to altitude (given baseline pressure; sea-level, runway, etc.)
 // P: absolute pressure (mBar)
 // P0: fixed baseline pressure (mBar)
 // returns signed altitude in meters
 
-HAL_StatusTypeDef BMP_GetError(I2C_HandleTypeDef *pI2C);
+HAL_StatusTypeDef BMP_GetError(void);
 // If any library command fails, you can retrieve an extended
 // error code using this command. Errors are from the HAL I2C library:
 // 		HAL_OK       = 0x00,

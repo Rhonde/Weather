@@ -261,48 +261,50 @@ bool BMP_GetTemperature(I2C_HandleTypeDef *pI2C, double *temperature)
 	return(result);
 }
 
-/********************
-char SFE_BMP180::startPressure(char oversampling)
+/***************************************************************************************************************/
+int8_t BMP_StartPressure(I2C_HandleTypeDef *pI2C, int8_t oversampling)
 // Begin a pressure reading.
 // Oversampling: 0 to 3, higher numbers are slower, higher-res outputs.
 // Will return delay in ms to wait, or 0 if I2C error.
 {
-	unsigned char data[2], result, delay;
+	int8_t data;
+	bool result;
+	int8_t delay;
 	
-	data[0] = BMP180_REG_CONTROL;
 
 	switch (oversampling)
 	{
 		case 0:
-			data[1] = BMP180_COMMAND_PRESSURE0;
+			data = BMP180_COMMAND_PRESSURE0;
 			delay = 5;
 		break;
 		case 1:
-			data[1] = BMP180_COMMAND_PRESSURE1;
+			data = BMP180_COMMAND_PRESSURE1;
 			delay = 8;
 		break;
 		case 2:
-			data[1] = BMP180_COMMAND_PRESSURE2;
+			data = BMP180_COMMAND_PRESSURE2;
 			delay = 14;
 		break;
 		case 3:
-			data[1] = BMP180_COMMAND_PRESSURE3;
+			data = BMP180_COMMAND_PRESSURE3;
 			delay = 26;
 		break;
 		default:
-			data[1] = BMP180_COMMAND_PRESSURE0;
+			data = BMP180_COMMAND_PRESSURE0;
 			delay = 5;
 		break;
 	}
-	result = writeBytes(data, 2);
-	if (result) // good write?
-		return(delay); // return the delay in ms (rounded up) to wait before retrieving data
-	else
-		return(0); // or return 0 if there was a problem communicating with the BMP
+	result = BMP_WriteBytes(pI2C, BMP180_REG_CONTROL, &data, 1);
+
+	if (result) 		// good write?
+		return delay; 	// return the delay in ms (rounded up) to wait before retrieving data
+
+	return 0; 			// or return 0 if there was a problem communicating with the BMP
 }
 
-
-char SFE_BMP180::getPressure(double &P, double &T)
+/***************************************************************************************************************/
+bool BMP_GetPressure(I2C_HandleTypeDef *pI2C, double *pressure, double temp)
 // Retrieve a previously started pressure reading, calculate abolute pressure in mbars.
 // Requires begin() to be called once prior to retrieve calibration parameters.
 // Requires startPressure() to have been called prior and sufficient time elapsed.
@@ -314,13 +316,11 @@ char SFE_BMP180::getPressure(double &P, double &T)
 
 // Note that calculated pressure value is absolute mbars, to compensate for altitude call sealevel().
 {
-	unsigned char data[3];
-	char result;
+	byte data[3];
+	bool result;
 	double pu,s,x,y,z;
 	
-	data[0] = BMP180_REG_RESULT;
-
-	result = readBytes(data, 3);
+	result = BMP_ReadBytes(pI2C, BMP180_REG_RESULT, data, 3);
 	if (result) // good read, calculate pressure
 	{
 		pu = (data[0] * 256.0) + data[1] + (data[2]/256.0);
@@ -331,51 +331,52 @@ char SFE_BMP180::getPressure(double &P, double &T)
 		//example from http://wmrx00.sourceforge.net/Arduino/BMP085-Calcs.pdf, pu = 0x982FC0;	
 		//pu = (0x98 * 256.0) + 0x2F + (0xC0/256.0);
 		
-		s = T - 25.0;
+		s = temp - 25.0;
 		x = (x2 * pow(s,2)) + (x1 * s) + x0;
 		y = (bmpY2 * pow(s,2)) + (bmpY1 * s) + bmpY0;
 		z = (pu - x) / y;
-		P = (bmpP2 * pow(z,2)) + (bmpP1 * z) + bmpP0;
+		*pressure = (bmpP2 * pow(z,2)) + (bmpP1 * z) + bmpP0;
 
-		Serial.println();
-		printf("BMP180: pu: ", pu);
-		printf("BMP180: T: ", *T);
-		printf("BMP180: s: ", s);
-		printf("BMP180: x: ", x);
-		printf("BMP180: y: ", y);
-		printf("BMP180: z: ", z);
-		printf("BMP180: P: ", *P);
+		printf("%s(%d): Pressure=%f\n", __FUNCTION__, __LINE__, *pressure);
+		printf("BMP180: Temp=%f\n", temp);
+		printf("BMP180: s=%f\n", s);
+		printf("BMP180: x=%f\n", x);
+		printf("BMP180: y=%f\n", y);
+		printf("BMP180: z=%f\n", z);
+		printf("BMP180: pu=%f\n", pu);
 	}
 	return(result);
 }
 
+/***********************************************************/
 
-double SFE_BMP180::sealevel(double P, double A)
+double BMP_SeaLevel(double pressure, double altitude)
 // Given a pressure P (mb) taken at a specific altitude (meters),
 // return the equivalent pressure (mb) at sea level.
 // This produces pressure readings that can be used for weather measurements.
 {
-	return(P/pow(1-(A/44330.0),5.255));
+	return(pressure/pow(1-(altitude/44330.0),5.255));
 }
 
+/***********************************************************/
 
-double SFE_BMP180::altitude(double P, double P0)
+double BMP_Altitude(double P, double P0)
 // Given a pressure measurement P (mb) and the pressure at a baseline P0 (mb),
 // return altitude (meters) above baseline.
 {
 	return(44330.0*(1-pow(P/P0,1/5.255)));
 }
 
+/***********************************************************/
 
-char SFE_BMP180::getError(void)
+byte BMP_GetError(void)
 	// If any library command fails, you can retrieve an extended
-	// error code using this command. Errors are from the wire library: 
-	// 0 = Success
-	// 1 = Data too long to fit in transmit buffer
-	// 2 = Received NACK on transmit of address
-	// 3 = Received NACK on transmit of data
-	// 4 = Other error
+	// error code using this command. Errors are from the HAL library:
+// 		HAL_OK       = 0x00,
+// 		HAL_ERROR    = 0x01,
+// 		HAL_BUSY     = 0x02,
+// 		HAL_TIMEOUT  = 0x03
 {
 	return(_error);
 }
-***********************************************************/
+/***********************************************************/

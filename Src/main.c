@@ -125,6 +125,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
+		double pressure = 0.0;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -149,7 +150,15 @@ int main(void)
 		printf("Remaining Capacity = %d mAh\n", remainingCapacity);
 		printf("State of Charge    = %d %% \n", stateOfCharge);
 		printf("Input Voltage      = %f V\n", inputVoltage);
-		printf("Temperature        = %f F\n", (temperature * 9.0 / 5.0) + 32.0);
+		printf("Batt. Temp         = %f F\n", (temperature * 9.0 / 5.0) + 32.0);
+	  	wait = BMP_StartTemperature(&hi2c3);
+	  	HAL_Delay(wait);
+	  	temp = 0.0;
+	  	BMP_GetTemperature(&hi2c3, &temp);
+	  	printf("BMP180 Temp = %f C, %f F\n", temp, ((temp*9.0)/5) + 32);
+	  	wait = BMP_StartPressure(&hi2c3, 1);
+	  	HAL_Delay(wait);
+	  	BMP_GetPressure(&hi2c3, &pressure, temp);
 
 	// Read time and date from energyShield and store locally
 	// Local values will not update until readClock is called again
@@ -163,7 +172,7 @@ int main(void)
 		printf("\n\n\n");
 
 		// Wait between reads
-		HAL_Delay(1000);
+		HAL_Delay(2000);
 
 	}
   /* USER CODE END 3 */
