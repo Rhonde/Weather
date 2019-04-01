@@ -53,6 +53,7 @@
 /* USER CODE BEGIN PV */
 NS_energyShield2 Es2(&hi2c3);		// use 3rd I2C
 SFE_BMP180 Bmp(&hi2c3);
+DHT11 dht(GPIOA, GPIO_PIN_1);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
