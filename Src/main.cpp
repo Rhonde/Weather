@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include "NS_energyShield2.h"
 #include "SFE_BMP180.h"
+#include "DHT11.h"
 
 /* USER CODE END Includes */
 
