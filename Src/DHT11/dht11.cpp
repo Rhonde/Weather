@@ -51,8 +51,6 @@ void DHT11::Start(void)
 
 	SetGpioInput();   // set as input
 
-	DWT_Delay_Init();
-
 }
 
 void DHT11::CheckResponse(void)
@@ -96,13 +94,25 @@ bool DHT11::ReadSensor(void)
 	int sum;
 	Start();
 	CheckResponse();
+
 	m_Rh[0] = ReadData();
 	m_Rh[1] = ReadData();
 	m_Temp[0] = ReadData();
 	m_Temp[1] = ReadData();
 	sum = ReadData();
+
 	if (sum != (m_Rh[0] + m_Rh[1] + m_Temp[0] + m_Temp[1])) 	// if the data is correct
 		return false;
+
 	return true;
 }
 
+float DHT11::GetTemperature(void)
+{
+	return (float)m_Temp[0] + m_Temp[1]/255.0;
+}
+
+float DHT11::GetHumidity(void)
+{
+	return (float)m_Rh[0] + m_Rh[1]/255.0;
+}

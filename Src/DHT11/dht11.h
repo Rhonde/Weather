@@ -17,13 +17,15 @@ class DHT11
 	public:
 		DHT11(GPIO_TypeDef *port, uint32_t m_pin);
 		bool ReadSensor(void);
+		void Start(void);
+		float GetTemperature(void);
+		float GetHumidity(void);
 
 	private:
 		void SetGpioOutput(void);
 		void SetGpioInput(void);
 		uint8_t ReadData(void);
 		void CheckResponse(void);
-		void Start(void);
 
 
 		GPIO_TypeDef    *m_port;

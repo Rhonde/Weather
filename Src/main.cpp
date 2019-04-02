@@ -32,6 +32,7 @@
 #include "NS_energyShield2.h"
 #include "SFE_BMP180.h"
 #include "DHT11.h"
+#include "dwt_stm32_delay.h"
 
 /* USER CODE END Includes */
 
@@ -118,6 +119,11 @@ int main(void)
 	}
 	if (Es2.readVMPP() != -1)
 		Es2.setVMPP(-1, 1); // Disable VMPP regulation to allow charging from any power supply (7V - 23V) and prevent excessive EEPROM writes
+
+	DWT_Delay_Init();
+
+	dht.ReadSensor();		// dont step thru this code -- its time sensitive
+	printf("DHT11:: Temp=%f, Humidity=%f\n", dht.GetTemperature(), dht.GetHumidity());
 
 	/* USER CODE END 2 */
 
