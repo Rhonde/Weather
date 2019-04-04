@@ -106,7 +106,7 @@ bool WiFiServer::hasClient() {
     return false;
 }
 
-WiFiClient WiFiServer::available(byte* status) {
+WiFiClient WiFiServer::available(uint8_t* status) {
     (void) status;
     if (_unclaimed) {
         WiFiClient result(_unclaimed);

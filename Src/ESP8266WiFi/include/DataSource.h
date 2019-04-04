@@ -130,7 +130,7 @@ protected:
 class ProgmemStream
 {
 public:
-    ProgmemStream(PGM_P buf, size_t size) :
+    ProgmemStream(uint8_t *buf, size_t size) :
         _buf(buf),
         _left(size)
     {
@@ -139,14 +139,14 @@ public:
     size_t readBytes(char* dst, size_t size)
     {
         size_t will_read = (_left < size) ? _left : size;
-        memcpy_P((void*)dst, (PGM_VOID_P)_buf, will_read);
+        memcpy((void*)dst, (void*)_buf, will_read);
         _left -= will_read;
         _buf += will_read;
         return will_read;
     }
 
 protected:
-    PGM_P _buf;
+    uint8_t * _buf;
     size_t _left;
 };
 

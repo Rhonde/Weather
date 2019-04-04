@@ -28,3 +28,5 @@
 *.app
 
 *.su
+
+\.settings/language\.settings\.xml

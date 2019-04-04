@@ -26,7 +26,7 @@
 #include <pgmspace.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Arduino.h>
+//#include <Arduino.h>
 #include <StackThunk.h>
 #include "BearSSLHelpers.h"
 

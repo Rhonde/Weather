@@ -26,7 +26,7 @@
 
 #include "ESP8266WiFiType.h"
 #include "ESP8266WiFiGeneric.h"
-//#include "user_interface.h"
+#include "user_interface.h"
 
 
 class ESP8266WiFiSTAClass {

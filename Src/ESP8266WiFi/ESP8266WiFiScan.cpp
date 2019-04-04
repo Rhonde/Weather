@@ -94,7 +94,7 @@ int8_t ESP8266WiFiScanClass::scanNetworks(bool async, bool show_hidden, uint8_t 
         ESP8266WiFiScanClass::_scanStarted = true;
 
         if(ESP8266WiFiScanClass::_scanAsync) {
-            delay(0); // time for the OS to trigger the scan
+            HAL_Delay(1); // time for the OS to trigger the scan
             return WIFI_SCAN_RUNNING;
         }
 

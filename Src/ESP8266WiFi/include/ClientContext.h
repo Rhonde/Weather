@@ -129,9 +129,9 @@ public:
             return 0;
         }
         _connect_pending = 1;
-        _op_start_time = millis();
+        _op_start_time = HAL_GetTick();
         // This delay will be interrupted by esp_schedule in the connect callback
-        delay(_timeout_ms);
+        HAL_Delay(_timeout_ms);
         _connect_pending = 0;
         if (!_pcb) {
             DEBUGV(":cabrt\r\n");
@@ -311,9 +311,9 @@ public:
         int prevsndbuf = -1;
 
         // wait for peer's acks to flush lwIP's output buffer
-        uint32_t last_sent = millis();
+        uint32_t last_sent = HAL_GetTick()();
         while (1) {
-            if (millis() - last_sent > (uint32_t) max_wait_ms) {
+            if (HAL_GetTick()() - last_sent > (uint32_t) max_wait_ms) {
 #ifdef DEBUGV
                 // wait until sent: timeout
                 DEBUGV(":wustmo\n");
@@ -330,10 +330,10 @@ public:
                 // send buffer has changed (or first iteration)
                 prevsndbuf = sndbuf;
                 // We just sent a bit, move timeout forward
-                last_sent = millis();
+                last_sent = HAL_GetTick()();
             }
 
-            delay(0); // from sys or os context
+            HAL_Delay(1); // from sys or os context
 
             if ((state() != ESTABLISHED) || (sndbuf == TCP_SND_BUF)) {
                 break;
@@ -369,7 +369,7 @@ public:
         return _write_from_source(new BufferedStreamDataSource<Stream>(stream, stream.available()));
     }
 
-    size_t write_P(PGM_P buf, size_t size)
+    size_t write(uint8_t *buf, size_t size)
     {
         if (!_pcb) {
             return 0;
@@ -378,7 +378,9 @@ public:
         return _write_from_source(new BufferedStreamDataSource<ProgmemStream>(stream, size));
     }
 
-    void keepAlive (uint16_t idle_sec = TCP_DEFAULT_KEEPALIVE_IDLE_SEC, uint16_t intv_sec = TCP_DEFAULT_KEEPALIVE_INTERVAL_SEC, uint8_t count = TCP_DEFAULT_KEEPALIVE_COUNT)
+    void keepAlive (uint16_t idle_sec = TCP_DEFAULT_KEEPALIVE_IDLE_SEC,
+    		uint16_t intv_sec = TCP_DEFAULT_KEEPALIVE_INTERVAL_SEC,
+			uint8_t count = TCP_DEFAULT_KEEPALIVE_COUNT)
     {
         if (idle_sec && intv_sec && count) {
             _pcb->so_options |= SOF_KEEPALIVE;
@@ -424,7 +426,7 @@ protected:
 
     bool _is_timeout()
     {
-        return millis() - _op_start_time > _timeout_ms;
+        return HAL_GetTick()() - _op_start_time > _timeout_ms;
     }
 
     void _notify_error()
@@ -440,10 +442,10 @@ protected:
         assert(_send_waiting == 0);
         _datasource = ds;
         _written = 0;
-        _op_start_time = millis();
+        _op_start_time = HAL_GetTick()();
         do {
             if (_write_some()) {
-                _op_start_time = millis();
+                _op_start_time = HAL_GetTick()();
             }
 
             if (!_datasource->available() || _is_timeout() || state() == CLOSED) {
