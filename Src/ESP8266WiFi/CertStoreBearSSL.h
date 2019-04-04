@@ -20,9 +20,8 @@
 #ifndef _CERTSTORE_BEARSSL_H
 #define _CERTSTORE_BEARSSL_H
 
-#include <Arduino.h>
-#include <BearSSLHelpers.h>
-#include <bearssl/bearssl.h>
+#include "BearSSLHelpers.h"
+#include "./bearssl/bearssl.h"
 
 // Base class for the certificate stores, which allow use
 // of a large set of certificates stored on SPIFFS of SD card to
@@ -55,7 +54,12 @@ class CertStoreFile {
 
 class CertStore {
   public:
-    CertStore() { };
+    CertStore() 						\
+	{									\
+    	_index = (CertStoreFile *)0;	\
+    	_data = (CertStoreFile *)0;		\
+    	_x509 = (X509List *)0;			\
+   	};
     ~CertStore() { };
 
     // Set the file interface instances, do preprocessing
@@ -65,9 +69,9 @@ class CertStore {
     void installCertStore(br_x509_minimal_context *ctx);
 
   protected:
-    CertStoreFile *_index = nullptr;
-    CertStoreFile *_data = nullptr;
-    X509List *_x509 = nullptr;
+    CertStoreFile *_index;
+    CertStoreFile *_data;
+    X509List *_x509;
 
     // These need to be static as they are callbacks from BearSSL C code
     static const br_x509_trust_anchor *findHashedTA(void *ctx, void *hashed_dn, size_t len);

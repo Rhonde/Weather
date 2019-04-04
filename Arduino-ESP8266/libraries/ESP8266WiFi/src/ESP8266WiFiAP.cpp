@@ -248,7 +248,7 @@ bool ESP8266WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPA
         ret = false;
     }
 
-    uint8 mode = info.gw.addr ? 1 : 0;
+    uint8_t mode = info.gw.addr ? 1 : 0;
     if(!wifi_softap_set_dhcps_offer_option(OFFER_ROUTER, &mode)) {
         DEBUG_WIFI("[APConfig] wifi_softap_set_dhcps_offer_option failed!\n");
         ret = false;

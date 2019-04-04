@@ -140,9 +140,9 @@ Ref: Espressif doc 2C-ESP8266_Non_OS_SDK_API_Reference, section 3.3.23 (system_r
 
 SDK function signature:
 bool	system_rtc_mem_read	(
-				uint32	des_addr,
+				uint32_t	des_addr,
 				void	*	src_addr,
-				uint32	save_size
+				uint32_t	save_size
 )
 
 The system data section can't be used by the user, so:

@@ -108,7 +108,7 @@ Other Function Calls
     WiFiMode_t  getMode ()
     bool  enableSTA (bool enable)
     bool  enableAP (bool enable)
-    bool  forceSleepBegin (uint32 sleepUs=0)
+    bool  forceSleepBegin (uint32_t sleepUs=0)
     bool  forceSleepWake ()
     int  hostByName (const char *aHostname, IPAddress &aResult)
 

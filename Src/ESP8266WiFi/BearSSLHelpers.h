@@ -23,7 +23,7 @@
 #ifndef _BEARSSLHELPERS_H
 #define _BEARSSLHELPERS_H
 
-#include <bearssl/bearssl.h>
+#include "./bearssl/bearssl.h"
 #include <Updater.h>
 
 

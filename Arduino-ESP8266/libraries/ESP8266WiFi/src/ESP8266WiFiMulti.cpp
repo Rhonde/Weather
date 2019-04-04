@@ -73,7 +73,7 @@ wl_status_t ESP8266WiFiMulti::run(void) {
             // scan done, analyze
             WifiAPEntry bestNetwork { NULL, NULL };
             int bestNetworkDb = INT_MIN;
-            uint8 bestBSSID[6];
+            uint8_t bestBSSID[6];
             int32_t bestChannel;
 
             DEBUG_WIFI_MULTI("[WIFI] scan done\n");

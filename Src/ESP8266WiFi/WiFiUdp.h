@@ -22,8 +22,8 @@
 #ifndef WIFIUDP_H
 #define WIFIUDP_H
 
-#include <Udp.h>
 #include <include/slist.h>
+#include <lwip/udp.h>
 
 #define UDP_TX_PACKET_MAX_SIZE 8192
 

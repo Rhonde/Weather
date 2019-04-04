@@ -25,7 +25,7 @@
 #define wificlientbearssl_h
 #include <vector>
 #include "WiFiClient.h"
-#include <bearssl/bearssl.h>
+#include "./bearssl/bearssl.h"
 #include "BearSSLHelpers.h"
 #include "CertStoreBearSSL.h"
 
@@ -43,12 +43,8 @@ class WiFiClientSecure : public WiFiClient {
 
     uint8_t connected() override;
     size_t write(const uint8_t *buf, size_t size) override;
-    size_t write_P(PGM_P buf, size_t size) override;
     size_t write(const char *buf) {
       return write((const uint8_t*)buf, strlen(buf));
-    }
-    size_t write_P(const char *buf) {
-      return write_P((PGM_P)buf, strlen_P(buf));
     }
     size_t write(Stream& stream); // Note this is not virtual
     int read(uint8_t *buf, size_t size) override;
@@ -77,7 +73,7 @@ class WiFiClientSecure : public WiFiClient {
     bool setFingerprint(const uint8_t fingerprint[20]) {
       _clearAuthenticationSettings();
       _use_fingerprint = true;
-      memcpy_P(_fingerprint, fingerprint, 20);
+      memcpy(_fingerprint, fingerprint, 20);
       return true;
     }
     bool setFingerprint(const char *fpStr);
@@ -140,19 +136,6 @@ class WiFiClientSecure : public WiFiClient {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored  "-Wdeprecated-declarations"
-
-    bool setCACert_P(PGM_VOID_P pk, size_t size) AXTLS_DEPRECATED {
-      return setCACert((const uint8_t *)pk, size);
-    }
-
-    bool setCertificate_P(PGM_VOID_P pk, size_t size) AXTLS_DEPRECATED {
-      return setCertificate((const uint8_t *)pk, size);
-    }
-
-    bool setPrivateKey_P(PGM_VOID_P pk, size_t size) AXTLS_DEPRECATED {
-      return setPrivateKey((const uint8_t *)pk, size);
-    }
-
 #pragma GCC diagnostic pop
 
     template<typename TFile>

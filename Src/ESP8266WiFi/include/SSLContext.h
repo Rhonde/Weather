@@ -32,11 +32,11 @@ extern "C"
 }
 #include <list>
 #include <errno.h>
-#include "../lwip/opt.h"
-#include "../lwip/ip.h"
-#include "../lwip/tcp.h"
-#include "../lwip/inet.h"
-#include "../lwip/netif.h"
+#include <lwip/opt.h>
+#include <lwip/ip.h>
+#include <lwip/tcp.h>
+#include <lwip/inet.h>
+#include <lwip/netif.h>
 #include <include/ClientContext.h>
 #include <WiFiClientSecureAxTLS.h>
 #include "c_types.h"

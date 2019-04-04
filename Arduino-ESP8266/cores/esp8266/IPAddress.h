@@ -96,7 +96,7 @@ class IPAddress: public Printable {
         operator bool () const { return isSet(); } // <-
         operator bool ()       { return isSet(); } // <- both are needed
 
-        // generic IPv4 wrapper to uint32-view like arduino loves to see it
+        // generic IPv4 wrapper to uint32_t-view like arduino loves to see it
         const u32_t& v4() const { return ip_2_ip4(&_ip)->addr; } // for raw_address(const)
               u32_t& v4()       { return ip_2_ip4(&_ip)->addr; }
 

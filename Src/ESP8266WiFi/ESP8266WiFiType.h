@@ -105,21 +105,21 @@ struct WiFiEventModeChange
 struct WiFiEventStationModeConnected
 {
     String ssid;
-    uint8 bssid[6];
-    uint8 channel;
+    uint8_t bssid[6];
+    uint8_t channel;
 };
 
 struct WiFiEventStationModeDisconnected
 {
     String ssid;
-    uint8 bssid[6];
+    uint8_t bssid[6];
     WiFiDisconnectReason reason;
 };
 
 struct WiFiEventStationModeAuthModeChanged
 {
-    uint8 oldMode;
-    uint8 newMode;
+    uint8_t oldMode;
+    uint8_t newMode;
 };
 
 struct WiFiEventStationModeGotIP
@@ -131,20 +131,20 @@ struct WiFiEventStationModeGotIP
 
 struct WiFiEventSoftAPModeStationConnected
 {
-    uint8 mac[6];
-    uint8 aid;
+    uint8_t mac[6];
+    uint8_t aid;
 };
 
 struct WiFiEventSoftAPModeStationDisconnected
 {
-    uint8 mac[6];
-    uint8 aid;
+    uint8_t mac[6];
+    uint8_t aid;
 };
 
 struct WiFiEventSoftAPModeProbeRequestReceived
 {
     int rssi;
-    uint8 mac[6];
+    uint8_t mac[6];
 };
 
 

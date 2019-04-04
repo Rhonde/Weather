@@ -23,7 +23,7 @@
 #include "WiFiServer.h"
 #include "WiFiClientSecureBearSSL.h"
 #include "BearSSLHelpers.h"
-#include <bearssl/bearssl.h>
+#include "./bearssl/bearssl.h"
 
 namespace BearSSL {
 

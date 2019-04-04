@@ -243,14 +243,14 @@ static bool i2s_slc_begin() {
   SLCTXL &= ~(SLCTXLAM << SLCTXLA); // clear TX descriptor address
   SLCRXL &= ~(SLCRXLAM << SLCRXLA); // clear RX descriptor address
   if (!rx) {
-    SLCTXL |= (uint32)&tx->slc_items[1] << SLCTXLA; // Set fake (unused) RX descriptor address
+    SLCTXL |= (uint32_t)&tx->slc_items[1] << SLCTXLA; // Set fake (unused) RX descriptor address
   } else {
-    SLCTXL |= (uint32)&rx->slc_items[0] << SLCTXLA; // Set real RX address
+    SLCTXL |= (uint32_t)&rx->slc_items[0] << SLCTXLA; // Set real RX address
   }
   if (!tx) {
-    SLCRXL |= (uint32)&rx->slc_items[1] << SLCRXLA; // Set fake (unused) TX descriptor address
+    SLCRXL |= (uint32_t)&rx->slc_items[1] << SLCRXLA; // Set fake (unused) TX descriptor address
   } else {
-    SLCRXL |= (uint32)&tx->slc_items[0] << SLCRXLA; // Set real TX address
+    SLCRXL |= (uint32_t)&tx->slc_items[0] << SLCRXLA; // Set real TX address
   }
 
   ETS_SLC_INTR_ATTACH(i2s_slc_isr, NULL);

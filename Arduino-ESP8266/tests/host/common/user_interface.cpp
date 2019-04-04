@@ -45,7 +45,7 @@ extern "C"
 
 #include <user_interface.h>
 
-uint8 wifi_get_opmode(void)
+uint8_t wifi_get_opmode(void)
 {
 	return STATION_MODE;
 }
@@ -55,12 +55,12 @@ phy_mode_t wifi_get_phy_mode(void)
 	return PHY_MODE_11N;
 }
 
-uint8 wifi_get_channel (void)
+uint8_t wifi_get_channel (void)
 {
 	return 1;
 }
 
-uint8 wifi_station_get_current_ap_id (void)
+uint8_t wifi_station_get_current_ap_id (void)
 {
 	return 0;
 }
@@ -70,7 +70,7 @@ station_status_t wifi_station_get_connect_status (void)
 	return STATION_GOT_IP;
 }
 
-uint8 wifi_station_get_auto_connect (void)
+uint8_t wifi_station_get_auto_connect (void)
 {
 	return 1;
 }
@@ -115,7 +115,7 @@ void wifi_fpm_set_sleep_type (sleep_type_t type)
 
 uint32_t global_ipv4_netfmt = 0; // global binding
 
-bool wifi_get_ip_info (uint8 if_index, struct ip_info *info)
+bool wifi_get_ip_info (uint8_t if_index, struct ip_info *info)
 {
 	struct ifaddrs * ifAddrStruct = NULL, * ifa = NULL;
 	uint32_t ipv4 = lwip_htonl(0x7f000001);
@@ -170,12 +170,12 @@ bool wifi_get_ip_info (uint8 if_index, struct ip_info *info)
 	return true;
 }
 
-uint8 wifi_get_listen_interval (void)
+uint8_t wifi_get_listen_interval (void)
 {
 	return 1;
 }
 
-bool wifi_get_macaddr(uint8 if_index, uint8 *macaddr)
+bool wifi_get_macaddr(uint8_t if_index, uint8_t *macaddr)
 {
 	(void)if_index;
 	macaddr[0] = 0xde;
@@ -187,7 +187,7 @@ bool wifi_get_macaddr(uint8 if_index, uint8 *macaddr)
 	return true;
 }
 
-uint8 wifi_get_opmode_default (void)
+uint8_t wifi_get_opmode_default (void)
 {
 	return STATION_MODE;
 }
@@ -206,7 +206,7 @@ sleep_type_t wifi_get_sleep_type (void)
 	return NONE_SLEEP_T;
 }
 
-bool wifi_set_channel (uint8 channel)
+bool wifi_set_channel (uint8_t channel)
 {
 	(void)channel;
 	return true;
@@ -219,25 +219,25 @@ void wifi_set_event_handler_cb (wifi_event_handler_cb_t cb)
 	mockverbose("TODO: wifi_set_event_handler_cb set\n");
 }
 
-bool wifi_set_ip_info (uint8 if_index, struct ip_info *info)
+bool wifi_set_ip_info (uint8_t if_index, struct ip_info *info)
 {
 	(void)if_index;
 	(void)info;
 	return false;
 }
 
-bool wifi_set_listen_interval (uint8 interval)
+bool wifi_set_listen_interval (uint8_t interval)
 {
 	(void)interval;
 	return true;
 }
 
-bool wifi_set_opmode (uint8 opmode)
+bool wifi_set_opmode (uint8_t opmode)
 {
 	return opmode == STATION_MODE || opmode == STATIONAP_MODE;
 }
 
-bool wifi_set_opmode_current (uint8 opmode)
+bool wifi_set_opmode_current (uint8_t opmode)
 {
 	return opmode == STATION_MODE || opmode == STATIONAP_MODE;
 }
@@ -305,7 +305,7 @@ sint8 wifi_station_get_rssi (void)
 	return 5;
 }
 
-bool wifi_station_set_auto_connect (uint8 set)
+bool wifi_station_set_auto_connect (uint8_t set)
 {
 	return set != 0;
 }
@@ -334,7 +334,7 @@ bool wifi_station_set_reconnect_policy (bool set)
 	return true;
 }
 
-void system_phy_set_max_tpw (uint8 max_tpw)
+void system_phy_set_max_tpw (uint8_t max_tpw)
 {
 	(void)max_tpw;
 }
@@ -372,7 +372,7 @@ bool wifi_softap_get_config_default(struct softap_config *config)
 	return wifi_softap_get_config(config);
 }
 
-uint8 wifi_softap_get_station_num(void)
+uint8_t wifi_softap_get_station_num(void)
 {
 	return 2;
 }
@@ -401,7 +401,7 @@ bool wifi_softap_set_dhcps_lease_time(uint32 minute)
 	return true;
 }
 
-bool wifi_softap_set_dhcps_offer_option(uint8 level, void* optarg)
+bool wifi_softap_set_dhcps_offer_option(uint8_t level, void* optarg)
 {
 	(void)level;
 	(void)optarg;

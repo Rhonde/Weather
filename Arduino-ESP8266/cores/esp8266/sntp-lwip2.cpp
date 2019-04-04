@@ -92,7 +92,7 @@ int settimeofday(const struct timeval* tv, const struct timezone* tz)
 
 #include <lwip/apps/sntp.h>
 
-static uint32 realtime_stamp = 0;
+static uint32_t realtime_stamp = 0;
 static uint16 dst = 0;
 static sint32 time_zone = 8 * (60 * 60); // espressif HQ's default timezone
 LOCAL os_timer_t sntp_timer;
@@ -405,7 +405,7 @@ char* sntp_asctime(struct tm *tim_p)
     return sntp_asctime_r (tim_p, reult);
 }
 
-uint32 ICACHE_RAM_ATTR sntp_get_current_timestamp(void)
+uint32_t ICACHE_RAM_ATTR sntp_get_current_timestamp(void)
 {
     return realtime_stamp;
 }

@@ -31,7 +31,7 @@ extern "C"
 #include "include/wl_definitions.h"
 }
 
-#include "IPAddress.h"
+#include <IPAddress.h>
 
 #include "ESP8266WiFiType.h"
 #include "ESP8266WiFiSTA.h"

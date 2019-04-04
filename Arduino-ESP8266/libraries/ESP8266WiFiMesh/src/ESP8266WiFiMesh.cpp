@@ -50,7 +50,7 @@ ESP8266WiFiMesh::~ESP8266WiFiMesh()
 
 ESP8266WiFiMesh::ESP8266WiFiMesh(ESP8266WiFiMesh::requestHandlerType requestHandler, ESP8266WiFiMesh::responseHandlerType responseHandler, 
                                  ESP8266WiFiMesh::networkFilterType networkFilter, const String &meshPassword, const String &meshName, 
-                                 const String &nodeID, bool verboseMode, uint8 meshWiFiChannel, uint16_t serverPort) 
+                                 const String &nodeID, bool verboseMode, uint8_t meshWiFiChannel, uint16_t serverPort) 
                                  : _server(serverPort), _lwipVersion{0, 0, 0}
 {
   storeLwipVersion();
@@ -184,7 +184,7 @@ bool ESP8266WiFiMesh::isAPController()
   return (this == apController);
 }
 
-void ESP8266WiFiMesh::setWiFiChannel(uint8 newWiFiChannel)
+void ESP8266WiFiMesh::setWiFiChannel(uint8_t newWiFiChannel)
 {
   assert(1 <= newWiFiChannel && newWiFiChannel <= 13);
   
@@ -201,7 +201,7 @@ void ESP8266WiFiMesh::setWiFiChannel(uint8 newWiFiChannel)
   }
 }
 
-uint8 ESP8266WiFiMesh::getWiFiChannel()
+uint8_t ESP8266WiFiMesh::getWiFiChannel()
 {
   return _meshWiFiChannel;
 }
@@ -547,7 +547,7 @@ void ESP8266WiFiMesh::attemptTransmission(const String &message, bool concluding
       }
       else
       {
-        // Scan function argument overview: scanNetworks(bool async = false, bool show_hidden = false, uint8 channel = 0, uint8* ssid = NULL)
+        // Scan function argument overview: scanNetworks(bool async = false, bool show_hidden = false, uint8_t channel = 0, uint8_t* ssid = NULL)
         n = WiFi.scanNetworks(false, _scanHidden, _meshWiFiChannel);
       }
       #else

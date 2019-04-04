@@ -23,7 +23,18 @@
  */
 
 #include "ESP8266WiFi.h"
-
+extern "C" {
+//#include "c_types.h"
+//#include "ets_sys.h"
+#include "os_type.h"
+//#include "osapi.h"
+//#include "mem.h"
+#include "user_interface.h"
+//#include "smartconfig.h"
+//#include "lwip/opt.h"
+//#include "lwip/err.h"
+//#include "lwip/dns.h"
+}
 // -----------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------- Debug ------------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------
@@ -36,15 +47,15 @@ void ESP8266WiFiClass::printDiag(Print& p)
 {
 	const char* modes[] =	{ "NULL", "STA", "AP", "STA+AP" };
 	const char* phymodes[] =	{ "", "B", "G", "N" };
-	struct station_config conf;
-	char ssid[33]; //ssid can be up to 32chars, => plus null term
+	station_config conf;
+	char ssid[33]; 			//ssid can be up to 32chars, => plus null term
 	char passphrase[65];
 
 	printf("Mode: 		%s\n", modes[wifi_get_opmode()]);
 	printf("PHY mode: 	%s\n", phymodes[(int) wifi_get_phy_mode()]);
 	printf("Channel: 	%d\n", wifi_get_channel());
 	printf("AP id: 		%d\n", wifi_station_get_current_ap_id());
-	printf("Status: 	%s\n", wifi_station_get_connect_status());
+	printf("Status: 	%d\n", wifi_station_get_connect_status());
 	printf("Auto con: 	%d\n", wifi_station_get_auto_connect());
 
 	wifi_station_get_config(&conf);
@@ -56,8 +67,8 @@ void ESP8266WiFiClass::printDiag(Print& p)
 	memcpy(passphrase, conf.password, sizeof(conf.password));
 	passphrase[64] = 0;
 
-	p.print("Pass(%d)	%s\n", strlen(passphrase), passphrase);
-	p.print("BSSID set:	%s\n", conf.bssid_set);
+	printf("Pass(%d)	%s\n", strlen(passphrase), passphrase);
+	printf("BSSID set:	%d\n", conf.bssid_set);
 
 }
 

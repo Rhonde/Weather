@@ -85,7 +85,7 @@ class ESP8266WiFiGenericClass {
         bool enableSTA(bool enable);
         bool enableAP(bool enable);
 
-        bool forceSleepBegin(uint32 sleepUs = 0);
+        bool forceSleepBegin(uint32_t sleepUs = 0);
         bool forceSleepWake();
 
         static void preinitWiFiOff (); //meant to be called in user-defined preinit()
