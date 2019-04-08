@@ -57,7 +57,7 @@ void WiFiEspServer::begin()
 	}
 }
 
-WiFiEspClient WiFiEspServer::available(byte* status)
+WiFiEspClient WiFiEspServer::available(uint8_t* status)
 {
 	// TODO the original method seems to handle automatic server restart
 

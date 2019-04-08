@@ -18,6 +18,8 @@
 
 //#include <Arduino.h>
 #include <pgmspace.h>
+#include <stdio.h>
+#include <stm32l4xx_hal.h>
 
 #include "EspDrv.h"
 #include "debug.h"

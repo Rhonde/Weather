@@ -44,7 +44,6 @@ WiFiEspClient::WiFiEspClient(uint8_t sock) : _sock(sock)
 size_t WiFiEspClient::print(const __FlashStringHelper *ifsh)
 {
 	printFSH(ifsh, false);
-	return strlen(ifsh);
 }
 
 // if we do override this, the standard println will call the print
@@ -52,7 +51,6 @@ size_t WiFiEspClient::print(const __FlashStringHelper *ifsh)
 size_t WiFiEspClient::println(const __FlashStringHelper *ifsh)
 {
 	printFSH(ifsh, true);
-	return strlen(ifsh);
 }
 
 
@@ -68,7 +66,7 @@ int WiFiEspClient::connectSSL(const char* host, uint16_t port)
 int WiFiEspClient::connectSSL(IPAddress ip, uint16_t port)
 {
 	char s[16];
-	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	sprintf_P(s, PSTR("%d.%d.%d.%d"), ip[0], ip[1], ip[2], ip[3]);
 	return connect(s, port, SSL_MODE);
 }
 
@@ -80,7 +78,7 @@ int WiFiEspClient::connect(const char* host, uint16_t port)
 int WiFiEspClient::connect(IPAddress ip, uint16_t port)
 {
 	char s[16];
-	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	sprintf_P(s, PSTR("%d.%d.%d.%d"), ip[0], ip[1], ip[2], ip[3]);
 
 	return connect(s, port, TCP_MODE);
 }
@@ -88,7 +86,7 @@ int WiFiEspClient::connect(IPAddress ip, uint16_t port)
 /* Private method */
 int WiFiEspClient::connect(const char* host, uint16_t port, uint8_t protMode)
 {
-	LOGINFO1("Connecting to", host);
+	LOGINFO1(F("Connecting to"), host);
 
 	_sock = WiFiEspClass::getFreeSocket();
 
@@ -101,7 +99,7 @@ int WiFiEspClient::connect(const char* host, uint16_t port, uint8_t protMode)
     }
 	else
 	{
-    	LOGERROR("No socket available");
+    	LOGERROR(F("No socket available"));
     	return 0;
     }
     return 1;
@@ -126,8 +124,8 @@ size_t WiFiEspClient::write(const uint8_t *buf, size_t size)
 	if (!r)
 	{
 		setWriteError();
-		LOGERROR1("Failed to write to socket", _sock);
-		HAL_Delay(4000);
+		LOGERROR1(F("Failed to write to socket"), _sock);
+		delay(4000);
 		stop();
 		return 0;
 	}
@@ -208,7 +206,7 @@ void WiFiEspClient::stop()
 	if (_sock == 255)
 		return;
 
-	LOGINFO1D(F("Disconnecting "), _sock);
+	LOGINFO1(F("Disconnecting "), _sock);
 
 	EspDrv::stopClient(_sock);
 
@@ -282,8 +280,8 @@ size_t WiFiEspClient::printFSH(const __FlashStringHelper *ifsh, bool appendCrLf)
 	if (!r)
 	{
 		setWriteError();
-		LOGERROR1D(F("Failed to write to socket"), _sock);
-		HAL_Delay(4000);
+		LOGERROR1(F("Failed to write to socket"), _sock);
+		delay(4000);
 		stop();
 		return 0;
 	}
