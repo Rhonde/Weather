@@ -30,14 +30,14 @@ WiFiEspServer::WiFiEspServer(uint16_t port)
 
 void WiFiEspServer::begin()
 {
-	LOGDEBUG(F("Starting server"));
+	LOGDEBUG("Starting server");
 
 	/* The ESP Module only allows socket 1 to be used for the server */
 #if 0
 	_sock = WiFiEspClass::getFreeSocket();
 	if (_sock == SOCK_NOT_AVAIL)
 	  {
-	    LOGERROR(F("No socket available for server"));
+	    LOGERROR("No socket available for server");
 	    return;
 	  }
 #else
@@ -49,11 +49,11 @@ void WiFiEspServer::begin()
 
 	if (_started)
 	{
-		LOGINFO1(F("Server started on port"), _port);
+		LOGINFO1D("Server started on port", _port);
 	}
 	else
 	{
-		LOGERROR(F("Server failed to start"));
+		LOGERROR("Server failed to start");
 	}
 }
 
@@ -64,7 +64,7 @@ WiFiEspClient WiFiEspServer::available(uint8_t* status)
 	int bytes = EspDrv::availData(0);
 	if (bytes>0)
 	{
-		LOGINFO1(F("New client"), EspDrv::_connId);
+		LOGINFO1D("New client", EspDrv::_connId);
 		WiFiEspClass::allocateSocket(EspDrv::_connId);
 		WiFiEspClient client(EspDrv::_connId);
 		return client;

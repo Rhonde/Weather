@@ -1,20 +1,20 @@
 /*--------------------------------------------------------------------
-This file is part of the Arduino WiFiEsp library.
+ This file is part of the Arduino WiFiEsp library.
 
-The Arduino WiFiEsp library is free software: you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
+ The Arduino WiFiEsp library is free software: you can redistribute it
+ and/or modify it under the terms of the GNU General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
 
-The Arduino WiFiEsp library is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ The Arduino WiFiEsp library is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with The Arduino WiFiEsp library.  If not, see
-<http://www.gnu.org/licenses/>.
---------------------------------------------------------------------*/
+ You should have received a copy of the GNU General Public License
+ along with The Arduino WiFiEsp library.  If not, see
+ <http://www.gnu.org/licenses/>.
+ --------------------------------------------------------------------*/
 
 #include <inttypes.h>
 
@@ -25,34 +25,38 @@ along with The Arduino WiFiEsp library.  If not, see
 #include "utility/EspDrv.h"
 #include "utility/debug.h"
 
-
-WiFiEspClient::WiFiEspClient() : _sock(255)
+WiFiEspClient::WiFiEspClient() :
+		_sock(255)
 {
 }
 
-WiFiEspClient::WiFiEspClient(uint8_t sock) : _sock(sock)
+WiFiEspClient::WiFiEspClient(uint8_t sock) :
+		_sock(sock)
 {
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
-// Overrided Print methods
+// Override Print methods
 ////////////////////////////////////////////////////////////////////////////////
 
 // the standard print method will call write for each character in the buffer
 // this is very slow on ESP
 size_t WiFiEspClient::print(const __FlashStringHelper *ifsh)
 {
-	printFSH(ifsh, false);
+	char *str = (char *) ifsh;
+	printf(str);
+	return strlen(str);
 }
 
 // if we do override this, the standard println will call the print
 // method twice
 size_t WiFiEspClient::println(const __FlashStringHelper *ifsh)
 {
-	printFSH(ifsh, true);
+	char *str = (char *) ifsh;
+	printf(str);
+	printf("\n");
+	return strlen(str);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation of Client virtual methods
@@ -66,19 +70,19 @@ int WiFiEspClient::connectSSL(const char* host, uint16_t port)
 int WiFiEspClient::connectSSL(IPAddress ip, uint16_t port)
 {
 	char s[16];
-	sprintf_P(s, PSTR("%d.%d.%d.%d"), ip[0], ip[1], ip[2], ip[3]);
+	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	return connect(s, port, SSL_MODE);
 }
 
 int WiFiEspClient::connect(const char* host, uint16_t port)
 {
-    return connect(host, port, TCP_MODE);
+	return connect(host, port, TCP_MODE);
 }
 
-int WiFiEspClient::connect(IPAddress ip, uint16_t port)
+int WiFiEspClient::connect(const IPAddress &ip, uint16_t port)
 {
 	char s[16];
-	sprintf_P(s, PSTR("%d.%d.%d.%d"), ip[0], ip[1], ip[2], ip[3]);
+	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 
 	return connect(s, port, TCP_MODE);
 }
@@ -86,35 +90,33 @@ int WiFiEspClient::connect(IPAddress ip, uint16_t port)
 /* Private method */
 int WiFiEspClient::connect(const char* host, uint16_t port, uint8_t protMode)
 {
-	LOGINFO1(F("Connecting to"), host);
+	LOGINFO1("Connecting to", host);
 
 	_sock = WiFiEspClass::getFreeSocket();
 
-    if (_sock != NO_SOCKET_AVAIL)
-    {
-    	if (!EspDrv::startClient(host, port, _sock, protMode))
+	if (_sock != NO_SOCKET_AVAIL)
+	{
+		if (!EspDrv::startClient(host, port, _sock, protMode))
 			return 0;
 
-    	WiFiEspClass::allocateSocket(_sock);
-    }
+		WiFiEspClass::allocateSocket(_sock);
+	}
 	else
 	{
-    	LOGERROR(F("No socket available"));
-    	return 0;
-    }
-    return 1;
+		LOGERROR("No socket available");
+		return 0;
+	}
+	return 1;
 }
-
-
 
 size_t WiFiEspClient::write(uint8_t b)
 {
-	  return write(&b, 1);
+	return write(&b, 1);
 }
 
 size_t WiFiEspClient::write(const uint8_t *buf, size_t size)
 {
-	if (_sock >= MAX_SOCK_NUM or size==0)
+	if (_sock >= MAX_SOCK_NUM or size == 0)
 	{
 		setWriteError();
 		return 0;
@@ -124,8 +126,8 @@ size_t WiFiEspClient::write(const uint8_t *buf, size_t size)
 	if (!r)
 	{
 		setWriteError();
-		LOGERROR1(F("Failed to write to socket"), _sock);
-		delay(4000);
+		LOGERROR1D("Failed to write to socket", _sock);
+		HAL_Delay(4000);
 		stop();
 		return 0;
 	}
@@ -133,14 +135,12 @@ size_t WiFiEspClient::write(const uint8_t *buf, size_t size)
 	return size;
 }
 
-
-
 int WiFiEspClient::available()
 {
 	if (_sock != 255)
 	{
 		int bytes = EspDrv::availData(_sock);
-		if (bytes>0)
+		if (bytes > 0)
 		{
 			return bytes;
 		}
@@ -192,45 +192,47 @@ int WiFiEspClient::peek()
 	return b;
 }
 
-
-void WiFiEspClient::flush()
+bool WiFiEspClient::flush(unsigned int maxWaitMs)
 {
+	int timer = HAL_GetTick();
+
 	while (available())
+	{
+		if ((HAL_GetTick() - timer) > maxWaitMs)
+			return false;
 		read();
+	}
+
+	return true;
 }
 
-
-
-void WiFiEspClient::stop()
+bool WiFiEspClient::stop(unsigned int maxWaitMs)
 {
 	if (_sock == 255)
-		return;
+		return true;
 
-	LOGINFO1(F("Disconnecting "), _sock);
+	LOGINFO1D("Disconnecting ", _sock);
 
 	EspDrv::stopClient(_sock);
 
 	WiFiEspClass::releaseSocket(_sock);
 	_sock = 255;
+	return true;
 }
-
 
 uint8_t WiFiEspClient::connected()
 {
 	return (status() == ESTABLISHED);
 }
 
-
 WiFiEspClient::operator bool()
 {
-  return _sock != 255;
+	return _sock != 255;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Additional WiFi standard methods
 ////////////////////////////////////////////////////////////////////////////////
-
 
 uint8_t WiFiEspClient::status()
 {
@@ -268,9 +270,9 @@ IPAddress WiFiEspClient::remoteIP()
 
 size_t WiFiEspClient::printFSH(const __FlashStringHelper *ifsh, bool appendCrLf)
 {
-	size_t size = strlen_P((char*)ifsh);
-	
-	if (_sock >= MAX_SOCK_NUM or size==0)
+	size_t size = strlen_P((char*) ifsh);
+
+	if (_sock >= MAX_SOCK_NUM or size == 0)
 	{
 		setWriteError();
 		return 0;
@@ -280,8 +282,8 @@ size_t WiFiEspClient::printFSH(const __FlashStringHelper *ifsh, bool appendCrLf)
 	if (!r)
 	{
 		setWriteError();
-		LOGERROR1(F("Failed to write to socket"), _sock);
-		delay(4000);
+		LOGERROR1D("Failed to write to socket", _sock);
+		HAL_Delay(4000);
 		stop();
 		return 0;
 	}

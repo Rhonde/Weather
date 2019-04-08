@@ -144,12 +144,12 @@ public:
     /*
 	 * Set ip configuration disabling dhcp client
 	 */
-    static void config(IPAddress local_ip);
+    static void config(IPAddress& local_ip);
 
     /*
 	 * Set ip configuration disabling dhcp client
 	 */
-    static void configAP(IPAddress local_ip);
+    static void configAP(IPAddress& local_ip);
 
 
     /*
@@ -320,11 +320,10 @@ private:
 
 
 	//static int sendCmd(const char* cmd, int timeout=1000);
-	static int sendCmd(const __FlashStringHelper* cmd, int timeout=1000);
-	static int sendCmd(const __FlashStringHelper* cmd, int timeout, ...);
+	static int sendCmd(const char* cmd, int timeout=1000);
+	static int sendCmd(const char* cmd, int timeout, ...);
 
-	static bool sendCmdGet(const __FlashStringHelper* cmd, const char* startTag, const char* endTag, char* outStr, int outStrLen);
-	static bool sendCmdGet(const __FlashStringHelper* cmd, const __FlashStringHelper* startTag, const __FlashStringHelper* endTag, char* outStr, int outStrLen);
+	static bool sendCmdGet(const char* cmd, const char* startTag, const char* endTag, char* outStr, int outStrLen);
 
 	static int readUntil(unsigned int timeout, const char* tag=NULL, bool findTags=true);
 

@@ -44,7 +44,7 @@ public:
   * Connect to the specified IP address and port. The return value indicates success or failure.
   * Returns true if the connection succeeds, false if not.
   */
-  virtual int connect(IPAddress ip, uint16_t port);
+  virtual int connect(const IPAddress &ip, uint16_t port);
 
   /*
   * Connect to the specified host and port. The return value indicates success or failure.
@@ -96,12 +96,12 @@ public:
   /*
   * Discard any bytes that have been written to the client but not yet read.
   */
-  virtual void flush();
+  virtual bool flush(unsigned int maxWaitMs = 0);
 
   /*
   * Disconnect from the server.
   */
-  virtual void stop();
+  virtual bool stop(unsigned int maxWaitMs = 0);
 
   /*
   * Whether or not the client is connected.

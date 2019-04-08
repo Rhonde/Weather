@@ -20,6 +20,8 @@ along with The Arduino WiFiEsp library.  If not, see
 #define WiFiEsp_h
 
 // #include <Arduino.h>
+#include <stdio.h>
+#include <stm32l4xx_hal.h>
 #include <Stream.h>
 #include <IPAddress.h>
 #include <inttypes.h>
