@@ -156,7 +156,7 @@ int WiFiEspUDP::read(uint8_t* buf, size_t size)
 
 int WiFiEspUDP::peek()
 {
-  uint8_t b;
+  uint8_t b=0;
   if (!available())
     return -1;
 

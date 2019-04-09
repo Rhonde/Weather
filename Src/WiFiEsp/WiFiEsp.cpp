@@ -31,10 +31,10 @@ WiFiEspClass::WiFiEspClass()
 
 }
 
-void WiFiEspClass::init(Stream* espSerial)
+void WiFiEspClass::init(UART_HandleTypeDef* espUART)
 {
-    LOGINFO(F("Initializing ESP module"));
-	EspDrv::wifiDriverInit(espSerial);
+    LOGINFO("Initializing ESP module");
+	EspDrv::wifiDriverInit(espUART);
 }
 
 

@@ -41,7 +41,7 @@ typedef enum
 	TAG_OK, TAG_ERROR, TAG_FAIL, TAG_SENDOK, TAG_CONNECT
 } TagsEnum;
 
-Stream *EspDrv::espSerial;
+UART_HandleTypeDef *EspDrv::espUART;
 
 RingBuffer EspDrv::ringBuf(32);
 
@@ -63,11 +63,11 @@ uint8_t EspDrv::_connId = 0;
 uint16_t EspDrv::_remotePort = 0;
 uint8_t EspDrv::_remoteIp[] = { 0 };
 
-void EspDrv::wifiDriverInit(Stream *espSerial)
+void EspDrv::wifiDriverInit(UART_HandleTypeDef *espUART)
 {
 	LOGDEBUG("> wifiDriverInit");
 
-	EspDrv::espSerial = espSerial;
+	EspDrv::espUART = espUART;
 
 	bool initOK = false;
 
@@ -457,7 +457,8 @@ uint8_t EspDrv::getScanNetworks()
 	LOGDEBUG("----------------------------------------------");
 	LOGDEBUG(">> AT+CWLAP");
 
-	espSerial->println("AT+CWLAP");
+
+	println("AT+CWLAP");
 
 	idx = readUntil(10000, "+CWLAP:(");
 
@@ -1052,13 +1053,17 @@ void EspDrv::espEmptyBuf(bool warn)
 {
 	char c;
 	int i = 0;
-	while (espSerial->available() > 0)
+	unsigned int _timeout = 1000;
+	uint8_t buf[4];
+
+
+	while(HAL_UART_Receive(espUART, &buf, 1, _timeout) == HAL_OK)
 	{
-		c = espSerial->read();
 		if (i > 0 and warn == true)
 			LOGDEBUG0C(c);
 		i++;
 	}
+
 	if (i > 0 and warn == true)
 	{
 		LOGDEBUG("");
@@ -1066,20 +1071,37 @@ void EspDrv::espEmptyBuf(bool warn)
 	}
 }
 
-// copied from Serial::timedRead
-int EspDrv::timedRead()
-{
-	unsigned int _timeout = 1000;
-	int c;
-	long _startMillis = HAL_GetTick();
-	do
-	{
-		c = espSerial->read();
-		if (c >= 0)
-			return c;
-	} while (HAL_GetTick() - _startMillis < _timeout);
 
-	return -1; // -1 indicates timeout
+bool EspDrv::available(void)
+{
+
+}
+char EspDrv::read(timeout)
+{
+	uint8_t buf[4];
+
+
+	if(HAL_UART_Receive(espUART, &buf, 1, _timeout) == HAL_OK)
+		return buf[0];
+
+	return -1;
+}
+
+int EspDrv::print(uint8_t *str)
+{
+	HAL_UART_Transmit(espUART, (uint8_t *) str, strlen(str), 100);
+	return strlen(str);
+}
+
+int EspDrv::println(uint8_t *str)
+{
+	HAL_UART_Transmit(espUART, (uint8_t *) str, strlen(str), 10);
+	char newline[3] = "\r\n";
+	HAL_UART_Transmit(espUART, (uint8_t *) newline, 2, 10);
+
+	return strlen(str)+2;
+
 }
 
 EspDrv espDrv;
+

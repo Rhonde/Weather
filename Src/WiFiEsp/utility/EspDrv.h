@@ -124,7 +124,7 @@ class EspDrv
 
 public:
 
-    static void wifiDriverInit(Stream *espSerial);
+    static void wifiDriverInit(UART_HandleTypeDef *espUART);
 
 
     /* Start Wifi connection with passphrase
@@ -290,7 +290,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 private:
-	static Stream *espSerial;
+	static UART_HandleTypeDef *espUART;
 
 	static long _bufPos;
 	static uint8_t _connId;
@@ -330,6 +330,10 @@ private:
 	static void espEmptyBuf(bool warn=true);
 
 	static int timedRead();
+	static int print(uint8_t *str);
+	static int println(uint8_t *str);
+	bool available(void);
+	static char read(int timeout);
 
 
 	friend class WiFiEsp;
