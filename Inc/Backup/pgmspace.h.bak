@@ -14,10 +14,6 @@
 #define PROGMEM
 #endif
 
-#ifndef __FlashStringHelper
-#define __FlashStringHelper char
-#endif
-
 #ifndef PGM_P
 #define PGM_P const char *
 #endif
