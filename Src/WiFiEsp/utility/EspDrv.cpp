@@ -41,33 +41,49 @@ typedef enum
 	TAG_OK, TAG_ERROR, TAG_FAIL, TAG_SENDOK, TAG_CONNECT
 } TagsEnum;
 
-UART_HandleTypeDef *EspDrv::m_espUART;
 
-RingBuffer EspDrv::ringBuf(32);
 
-// Array of data to cache the information related to the networks discovered
-char EspDrv::_networkSsid[][WL_SSID_MAX_LENGTH] = {{ "1" }, { "2" }, { "3" }, { "4" }, { "5" } };
-int32_t EspDrv::_networkRssi[WL_NETWORKS_LIST_MAXNUM] = { 0 };
-uint8_t EspDrv::_networkEncr[WL_NETWORKS_LIST_MAXNUM] = { 0 };
 
-// Cached values of retrieved data
-char EspDrv::_ssid[] = { 0 };
-uint8_t EspDrv::_bssid[] = { 0 };
-uint8_t EspDrv::_mac[] = { 0 };
-uint8_t EspDrv::_localIp[] = { 0 };
-char EspDrv::fwVersion[] = { 0 };
+EspDrv::EspDrv()
+{
+	// Array of data to cache the information related to the networks discovered
+	for(int ix = 0; ix < WL_NETWORKS_LIST_MAXNUM; ix++)
+	{
+		sprintf(m_networkSsid[ix], "%d", ix+1);
+		m_networkRssi[ix] = 0;
+		m_networkEncr[ix] = 0;
+	}
 
-long EspDrv::_bufPos = 0;
-uint8_t EspDrv::_connId = 0;
+	// Cached values of retrieved data
+	for(ix = 0; ix < WL_SSID_MAX_LENGTH; ix++)
+		m_ssid[ix] = 0;
 
-uint16_t EspDrv::_remotePort = 0;
-uint8_t EspDrv::_remoteIp[] = { 0 };
+	for(ix = 0; ix < WL_MAC_ADDR_LENGTH; ix++)
+	{
+		m_bssid[ix] = 0;
+		m_mac[ix] =0;
+	}
+	for(ix = 0; ix < WL_IPV4_LENGTH; ix++)
+		m_localIp[ix] = 0;
 
+	for(ix = 0; ix < sizeof(fwVersion); ix++)
+		m_fwVersion[ix] = 0;
+
+	m_bufPos = 0;
+	m_connId = 0;
+
+	m_remotePort = 0;
+	for(ix = 0; ix < sizeof(m_remoteIp); ix++)
+		m_remoteIp[ix] = { 0 };
+
+	m_ringBuf = new RingBuffer(32);
+
+}
 void EspDrv::wifiDriverInit(UART_HandleTypeDef *_espUART)
 {
 	LOGDEBUG("> wifiDriverInit");
 
-	EspDrv::m_espUART = _espUART;
+	m_espUART = _espUART;
 
 	bool initOK = false;
 
@@ -94,14 +110,14 @@ void EspDrv::wifiDriverInit(UART_HandleTypeDef *_espUART)
 	getFwVersion();
 
 	// prints a warning message if the firmware is not 1.X or 2.X
-	if ((fwVersion[0] != '1' and fwVersion[0] != '2') or fwVersion[1] != '.')
+	if (((m_fwVersion[0] != '1') && (m_fwVersion[0] != '2')) || (m_fwVersion[1] != '.'))
 	{
-		LOGWARN1("Warning: Unsupported firmware", fwVersion);
+		LOGWARN1("Warning: Unsupported firmware", m_fwVersion);
 		HAL_Delay(4000);
 	}
 	else
 	{
-		LOGINFO1("Initilization successful -", fwVersion);
+		LOGINFO1("Initilization successful -", m_fwVersion);
 	}
 }
 
@@ -126,7 +142,7 @@ void EspDrv::reset()
 	// Show remote IP and port with "+IPD"
 	sendCmd("AT+CIPDINFO=1");
 
-	// Disable autoconnect
+	// Disable auto connect
 	// Automatic connection can create problems during initialization phase at next boot
 	sendCmd("AT+CWAUTOCONN=0");
 
@@ -292,6 +308,7 @@ uint8_t EspDrv::getConnectionStatus()
 
 	// 4: client disconnected
 	// 5: wifi disconnected
+
 	int s = atoi(buf);
 	if (s == 2 or s == 3 or s == 4)
 		return WL_CONNECTED;
@@ -323,7 +340,7 @@ uint8_t* EspDrv::getMacAddress()
 {
 	LOGDEBUG("> getMacAddress");
 
-	memset(_mac, 0, WL_MAC_ADDR_LENGTH);
+	memset(m__mac, 0, WL_MAC_ADDR_LENGTH);
 
 	char buf[20];
 	if (sendCmdGet("AT+CIFSR", ":STAMAC,\"", "\"", buf, sizeof(buf)))
@@ -357,13 +374,13 @@ void EspDrv::getIpAddress(IPAddress& ip)
 		char* token;
 
 		token = strtok(buf, ".");
-		_localIp[0] = atoi(token);
+		m_localIp[0] = atoi(token);
 		token = strtok(NULL, ".");
-		_localIp[1] = atoi(token);
+		m_localIp[1] = atoi(token);
 		token = strtok(NULL, ".");
-		_localIp[2] = atoi(token);
+		m_localIp[2] = atoi(token);
 		token = strtok(NULL, ".");
-		_localIp[3] = atoi(token);
+		m_localIp[3] = atoi(token);
 
 		ip = _localIp;
 	}
@@ -375,21 +392,20 @@ void EspDrv::getIpAddressAP(IPAddress& ip)
 
 	char buf[20];
 	memset(buf, '\0', sizeof(buf));
-	if (sendCmdGet("AT+CIPAP?", "+CIPAP:ip:\"", "\"", buf,
-			sizeof(buf)))
+	if (sendCmdGet("AT+CIPAP?", "+CIPAP:ip:\"", "\"", buf, sizeof(buf)))
 	{
 		char* token;
 
 		token = strtok(buf, ".");
-		_localIp[0] = atoi(token);
+		m_localIp[0] = atoi(token);
 		token = strtok(NULL, ".");
-		_localIp[1] = atoi(token);
+		m_localIp[1] = atoi(token);
 		token = strtok(NULL, ".");
-		_localIp[2] = atoi(token);
+		m_localIp[2] = atoi(token);
 		token = strtok(NULL, ".");
-		_localIp[3] = atoi(token);
+		m_localIp[3] = atoi(token);
 
-		ip = _localIp;
+		ip = m_localIp;
 	}
 }
 
@@ -397,7 +413,7 @@ char* EspDrv::getCurrentSSID()
 {
 	LOGDEBUG("> getCurrentSSID");
 
-	_ssid[0] = 0;
+	m_ssid[0] = 0;
 	sendCmdGet("AT+CWJAP?", "+CWJAP:\"", "\"", _ssid, sizeof(_ssid));
 
 	return _ssid;
@@ -407,7 +423,7 @@ uint8_t* EspDrv::getCurrentBSSID()
 {
 	LOGDEBUG("> getCurrentBSSID");
 
-	memset(_bssid, 0, WL_MAC_ADDR_LENGTH);
+	memset(m_bssid, 0, WL_MAC_ADDR_LENGTH);
 
 	char buf[20];
 	if (sendCmdGet("AT+CWJAP?", ",\"", "\",", buf, sizeof(buf)))
@@ -415,19 +431,19 @@ uint8_t* EspDrv::getCurrentBSSID()
 		char* token;
 
 		token = strtok(buf, ":");
-		_bssid[5] = (uint8_t) strtol(token, NULL, 16);
+		m_bssid[5] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_bssid[4] = (uint8_t) strtol(token, NULL, 16);
+		m_bssid[4] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_bssid[3] = (uint8_t) strtol(token, NULL, 16);
+		m_bssid[3] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_bssid[2] = (uint8_t) strtol(token, NULL, 16);
+		m_bssid[2] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_bssid[1] = (uint8_t) strtol(token, NULL, 16);
+		m_bssid[1] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_bssid[0] = (uint8_t) strtol(token, NULL, 16);
+		m_bssid[0] = (uint8_t) strtol(token, NULL, 16);
 	}
-	return _bssid;
+	return m_bssid;
 
 }
 
@@ -464,7 +480,7 @@ uint8_t EspDrv::getScanNetworks()
 
 	while (idx == NUMESPTAGS)
 	{
-		_networkEncr[ssidListNum] = espSerial->parseInt();
+		m_networkEncr[ssidListNum] = espSerial->parseInt();
 
 		// discard , and " characters
 		readUntil(1000, "\"");
@@ -472,15 +488,14 @@ uint8_t EspDrv::getScanNetworks()
 		idx = readUntil(1000, "\"", false);
 		if (idx == NUMESPTAGS)
 		{
-			memset(_networkSsid[ssidListNum], 0, WL_SSID_MAX_LENGTH);
-			ringBuf.getStrN(_networkSsid[ssidListNum], 1,
-					WL_SSID_MAX_LENGTH - 1);
+			memset(m_networkSsid[ssidListNum], 0, WL_SSID_MAX_LENGTH);
+			m_ringBuf->getStrN(m_networkSsid[ssidListNum], 1, WL_SSID_MAX_LENGTH - 1);
 		}
 
 		// discard , character
 		readUntil(1000, ",");
 
-		_networkRssi[ssidListNum] = espSerial->parseInt();
+		m_networkRssi[ssidListNum] = espSerial->parseInt();
 
 		idx = readUntil(1000, "+CWLAP:(");
 
@@ -532,7 +547,7 @@ char* EspDrv::getSSIDNetoworks(uint8_t networkItem)
 	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
 		return NULL;
 
-	return _networkSsid[networkItem];
+	return m_networkSsid[networkItem];
 }
 
 uint8_t EspDrv::getEncTypeNetowrks(uint8_t networkItem)
@@ -540,7 +555,7 @@ uint8_t EspDrv::getEncTypeNetowrks(uint8_t networkItem)
 	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
 		return 0;
 
-	return _networkEncr[networkItem];
+	return m_networkEncr[networkItem];
 }
 
 int32_t EspDrv::getRSSINetoworks(uint8_t networkItem)
@@ -548,18 +563,18 @@ int32_t EspDrv::getRSSINetoworks(uint8_t networkItem)
 	if (networkItem >= WL_NETWORKS_LIST_MAXNUM)
 		return 0;
 
-	return _networkRssi[networkItem];
+	return m_networkRssi[networkItem];
 }
 
 char* EspDrv::getFwVersion()
 {
 	LOGDEBUG("> getFwVersion");
 
-	fwVersion[0] = 0;
+	m_fwVersion[0] = 0;
 
-	sendCmdGet("AT+GMR", "SDK version:", "\r\n", fwVersion,	sizeof(fwVersion));
+	sendCmdGet("AT+GMR", "SDK version:", "\r\n", m_fwVersion,	sizeof(m_fwVersion));
 
-	return fwVersion;
+	return m_fwVersion;
 }
 
 bool EspDrv::ping(const char *host)
@@ -633,49 +648,50 @@ uint8_t EspDrv::getServerState(uint8_t sock)
 
 uint16_t EspDrv::availData(uint8_t connId)
 {
-	//LOGDEBUG(bufPos);
+	uint8_t buf[80];
 
 	// if there is data in the buffer
-	if (_bufPos > 0)
+	if (m_bufPos > 0)
 	{
-		if (_connId == connId)
-			return _bufPos;
-		else if (_connId == 0)
-			return _bufPos;
+		if (m_connId == connId)
+			return m_bufPos;
+		else if (m_connId == 0)
+			return m_bufPos;
 	}
 
-	int bytes = espSerial->available();
+	//HAL_UART_Receive(m_espUART, )
+	//int bytes = available();
 
 	if (bytes)
 	{
 		//LOGDEBUG1("Bytes in the serial buffer: ", bytes);
-		if (espSerial->find((char *) "+IPD,"))
+		//if (find((char *) "+IPD,"))
 		{
 			// format is : +IPD,<id>,<len>:<data>
 			// format is : +IPD,<ID>,<len>[,<remote IP>,<remote port>]:<data>
 
-			_connId = espSerial->parseInt();    // <ID>
+			m_connId = espSerial->parseInt();    // <ID>
 			espSerial->read();                  // ,
-			_bufPos = espSerial->parseInt();    // <len>
+			m_bufPos = espSerial->parseInt();    // <len>
 			espSerial->read();                  // "
-			_remoteIp[0] = espSerial->parseInt();    // <remote IP>
+			m_remoteIp[0] = espSerial->parseInt();    // <remote IP>
 			espSerial->read();                  // .
-			_remoteIp[1] = espSerial->parseInt();
+			m_remoteIp[1] = espSerial->parseInt();
 			espSerial->read();                  // .
-			_remoteIp[2] = espSerial->parseInt();
+			m_remoteIp[2] = espSerial->parseInt();
 			espSerial->read();                  // .
-			_remoteIp[3] = espSerial->parseInt();
+			m_remoteIp[3] = espSerial->parseInt();
 			espSerial->read();                  // "
 			espSerial->read();                  // ,
-			_remotePort = espSerial->parseInt();     // <remote port>
+			m_remotePort = espSerial->parseInt();     // <remote port>
 
-			espSerial->read();                  // :
+			//read();                  // :
 
 			LOGDEBUG("");
-			LOGDEBUG2DL("Data packet", _connId, _bufPos);
+			LOGDEBUG2DL("Data packet", m_connId, m_bufPos);
 
-			if (_connId == connId || connId == 0)
-				return _bufPos;
+			if (m_connId == connId || connId == 0)
+				return m_bufPos;
 		}
 	}
 	return 0;
@@ -683,7 +699,7 @@ uint16_t EspDrv::availData(uint8_t connId)
 
 bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 {
-	if (connId != _connId)
+	if (connId != m_connId)
 		return false;
 
 	// see Serial.timedRead
@@ -691,33 +707,33 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 	long _startMillis = HAL_GetTick();
 	do
 	{
-		if (espSerial->available())
+		// if (espSerial->available())
 		{
 			if (peek)
 			{
-				*data = (char) espSerial->peek();
+				//*data = (char) espSerial->peek();
 			}
 			else
 			{
-				*data = (char) espSerial->read();
-				_bufPos--;
+				//*data = (char) espSerial->read();
+				m_bufPos--;
 			}
 			//Serial.print((char)*data);
 
-			if (_bufPos == 0)
+			if (m_bufPos == 0)
 			{
 				// after the data packet a ",CLOSED" string may be received
 				// this means that the socket is now closed
 
 				HAL_Delay(5);
 
-				if (espSerial->available())
+				//if (espSerial->available())
 				{
 					//LOGDEBUG(".2");
 					//LOGDEBUG(espSerial->peek());
 
 					// 48 = '0'
-					if (espSerial->peek() == 48 + connId)
+					//if (espSerial->peek() == 48 + connId)
 					{
 						int idx = readUntil(500, ",CLOSED\r\n", false);
 						if (idx != NUMESPTAGS)
@@ -738,10 +754,10 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 	} while (HAL_GetTick() - _startMillis < 2000);
 
 	// timed out, reset the buffer
-	LOGERROR1L("TIMEOUT:", _bufPos);
+	LOGERROR1L("TIMEOUT:", m_bufPos);
 
-	_bufPos = 0;
-	_connId = 0;
+	m_bufPos = 0;
+	m_connId = 0;
 	*data = 0;
 
 	return false;
@@ -754,11 +770,11 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
  */
 int EspDrv::getDataBuf(uint8_t connId, uint8_t *buf, uint16_t bufSize)
 {
-	if (connId != _connId)
+	if (connId != m_connId)
 		return false;
 
-	if (_bufPos < bufSize)
-		bufSize = _bufPos;
+	if (m_bufPos < bufSize)
+		bufSize = m_bufPos;
 
 	for (uint16_t i = 0; i < bufSize; i++)
 	{
@@ -768,7 +784,7 @@ int EspDrv::getDataBuf(uint8_t connId, uint8_t *buf, uint16_t bufSize)
 			return -1;
 
 		buf[i] = (char) c;
-		_bufPos--;
+		m_bufPos--;
 	}
 
 	return bufSize;
@@ -780,7 +796,7 @@ bool EspDrv::sendData(uint8_t sock, const uint8_t *data, uint16_t len)
 
 	char cmdBuf[20];
 	sprintf(cmdBuf, "AT+CIPSEND=%d,%u", sock, len);
-	espSerial->println(cmdBuf);
+	//espSerial->println(cmdBuf);
 
 	int idx = readUntil(1000, (char *) ">", false);
 	if (idx != NUMESPTAGS)
@@ -809,7 +825,7 @@ bool EspDrv::sendData(uint8_t sock, const __FlashStringHelper *data, uint16_t le
 	char cmdBuf[20];
 	uint16_t len2 = len + 2*appendCrLf;
 	sprintf(cmdBuf, "AT+CIPSEND=%d,%u", sock, len2);
-	espSerial->println(cmdBuf);
+	//espSerial->println(cmdBuf);
 
 	int idx = readUntil(1000, (char *)">", false);
 	if(idx!=NUMESPTAGS)
@@ -850,7 +866,7 @@ bool EspDrv::sendDataUdp(uint8_t sock, const char* host, uint16_t port,
 	char cmdBuf[40];
 	sprintf(cmdBuf, "AT+CIPSEND=%d,%u,\"%s\",%u", sock, len, host, port);
 	//LOGDEBUG1("> sendDataUdp:", cmdBuf);
-	espSerial->println(cmdBuf);
+	//espSerial->println(cmdBuf);
 
 	int idx = readUntil(1000, (char *) ">", false);
 	if (idx != NUMESPTAGS)
@@ -873,12 +889,12 @@ bool EspDrv::sendDataUdp(uint8_t sock, const char* host, uint16_t port,
 
 void EspDrv::getRemoteIpAddress(IPAddress& ip)
 {
-	ip = _remoteIp;
+	ip = m_remoteIp;
 }
 
 uint16_t EspDrv::getRemotePort()
 {
-	return _remotePort;
+	return m_remotePort;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -903,7 +919,7 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag, const char* endTa
 	LOGDEBUG1(">>", cmd);
 
 	// send AT command to ESP
-	espSerial->println(cmd);
+	//espSerial->println(cmd);
 
 	// read result until the startTag is found
 	idx = readUntil(1000, startTag);
@@ -911,7 +927,7 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag, const char* endTa
 	if(idx==NUMESPTAGS)
 	{
 		// clean the buffer to get a clean string
-		ringBuf.init();
+		//m_ringBuf->init();
 
 		// start tag found, search the endTag
 		idx = readUntil(500, endTag);
@@ -920,7 +936,7 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag, const char* endTa
 		{
 			// end tag found
 			// copy result to output buffer avoiding overflow
-			ringBuf.getStrN(outStr, strlen(endTag), outStrLen-1);
+			m_ringBuf->getStrN(outStr, strlen(endTag), outStrLen-1);
 
 			// read the remaining part of the response
 			readUntil(2000);
@@ -962,7 +978,7 @@ int EspDrv::sendCmd(const char* cmd, int timeout)
 	LOGDEBUG1(">>", cmd);
 
 
-	status = HAL_UART_Transmit(m_espUART, cmd, strlen(cmd), timeout);
+	status = HAL_UART_Transmit(m_espUART, (uint8_t*)cmd, strlen(cmd), timeout);
 
 	int idx = readUntil(timeout);
 
@@ -1007,7 +1023,7 @@ int EspDrv::sendCmd(const char* cmd, int timeout, ...)
 //   -1 if no tag was found (timeout)
 int EspDrv::readUntil(unsigned int timeout, const char* tag, bool findTags)
 {
-	ringBuf.reset();
+	m_ringBuf->reset();
 
 	char c;
 	unsigned long start = HAL_GetTick();
@@ -1015,15 +1031,15 @@ int EspDrv::readUntil(unsigned int timeout, const char* tag, bool findTags)
 
 	while ((HAL_GetTick() - start < timeout) and ret < 0)
 	{
-		if (espSerial->available())
+		//if (espSerial->available())
 		{
 			c = (char) espSerial->read();
 			LOGDEBUG0C(c);
-			ringBuf.push(c);
+			m_ringBuf->push(c);
 
 			if (tag != NULL)
 			{
-				if (ringBuf.endsWith(tag))
+				if (m_ringBuf->endsWith(tag))
 				{
 					ret = NUMESPTAGS;
 					//LOGDEBUG1("xxx");
@@ -1033,7 +1049,7 @@ int EspDrv::readUntil(unsigned int timeout, const char* tag, bool findTags)
 			{
 				for (int i = 0; i < NUMESPTAGS; i++)
 				{
-					if (ringBuf.endsWith(ESPTAGS[i]))
+					if (m_ringBuf->endsWith(ESPTAGS[i]))
 					{
 						ret = i;
 						break;
@@ -1059,7 +1075,7 @@ void EspDrv::espEmptyBuf(bool warn)
 	uint8_t buf[4];
 
 
-	while(HAL_UART_Receive(m_espUART, &buf, 1, _timeout) == HAL_OK)
+	while(HAL_UART_Receive(m_espUART, buf, 1, _timeout) == HAL_OK)
 	{
 		if (i > 0 and warn == true)
 			LOGDEBUG0C(c);
@@ -1078,12 +1094,12 @@ bool EspDrv::available(void)
 {
 
 }
-char EspDrv::read(timeout)
+char EspDrv::read(uint32_t timeout)
 {
 	uint8_t buf[4];
 
 
-	if(HAL_UART_Receive(m_espUART, &buf, 1, _timeout) == HAL_OK)
+	if(HAL_UART_Receive(m_espUART, buf, 1, _timeout) == HAL_OK)
 		return buf[0];
 
 	return -1;
@@ -1091,19 +1107,16 @@ char EspDrv::read(timeout)
 
 int EspDrv::print(uint8_t *str, uint32_t timeout)
 {
-	HAL_UART_Transmit(m_espUART, (uint8_t *) str, strlen(str), timeout);
+	HAL_UART_Transmit(m_espUART, str, strlen(str), timeout);
 	return strlen(str);
 }
 
 int EspDrv::println(uint8_t *str, uint32_t timeout)
 {
-	HAL_UART_Transmit(espUART, (uint8_t *) str, strlen(str), timeout);
+	HAL_UART_Transmit(espUART, str, strlen(str), timeout);
 	char newline[3] = "\r\n";
 	HAL_UART_Transmit(espUART, (uint8_t *) newline, 2, timeout);
 
 	return strlen(str)+2;
-
 }
-
-EspDrv espDrv;
 

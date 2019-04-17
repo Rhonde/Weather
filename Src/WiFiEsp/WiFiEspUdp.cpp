@@ -30,15 +30,15 @@ WiFiEspUDP::WiFiEspUDP() : _sock(NO_SOCKET_AVAIL) {}
 
 /* Start WiFiUDP socket, listening at local port PORT */
 
-uint8_t WiFiEspUDP::begin(uint16_t port)
+uint8_t WiFiEspUDP::begin(WiFiEspClass &wifi, uint16_t port)
 {
-    uint8_t sock = WiFiEspClass::getFreeSocket();
+    uint8_t sock = wifi.getFreeSocket();
     if (sock != NO_SOCKET_AVAIL)
     {
-        EspDrv::startClient("0", port, sock, UDP_MODE);
+        m_espDrv->startClient("0", port, sock, UDP_MODE);
 		
-        WiFiEspClass::allocateSocket(sock);  // allocating the socket for the listener
-        WiFiEspClass::_server_port[sock] = port;
+        allocateSocket(sock);  // allocating the socket for the listener
+        m_server_port[sock] = port;
         _sock = sock;
         _port = port;
         return 1;
@@ -75,8 +75,8 @@ void WiFiEspUDP::stop()
       
       // Stop the listener and return the socket to the pool
 	  EspDrv::stopClient(_sock);
-      WiFiEspClass::_state[_sock] = NA_STATE;
-      WiFiEspClass::_server_port[_sock] = 0;
+      m_state[_sock] = NA_STATE;
+      m_server_port[_sock] = 0;
 
 	  _sock = NO_SOCKET_AVAIL;
 }
@@ -84,13 +84,13 @@ void WiFiEspUDP::stop()
 int WiFiEspUDP::beginPacket(const char *host, uint16_t port)
 {
   if (_sock == NO_SOCKET_AVAIL)
-	  _sock = WiFiEspClass::getFreeSocket();
+	  _sock = getFreeSocket();
   if (_sock != NO_SOCKET_AVAIL)
   {
 	  //EspDrv::startClient(host, port, _sock, UDP_MODE);
 	  _remotePort = port;
 	  strcpy(_remoteHost, host);
-	  WiFiEspClass::allocateSocket(_sock);
+	  allocateSocket(_sock);
 	  return 1;
   }
   return 0;

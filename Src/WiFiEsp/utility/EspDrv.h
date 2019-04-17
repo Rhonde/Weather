@@ -123,8 +123,8 @@ class EspDrv
 {
 
 public:
-
-    static void wifiDriverInit(UART_HandleTypeDef *espUART);
+	EspDrv();
+    void wifiDriverInit(UART_HandleTypeDef *espUART);
 
 
     /* Start Wifi connection with passphrase
@@ -132,24 +132,24 @@ public:
      * param ssid: Pointer to the SSID string.
      * param passphrase: Passphrase. Valid characters in a passphrase must be between ASCII 32-126 (decimal).
      */
-    static bool wifiConnect(const char* ssid, const char* passphrase);
+    bool wifiConnect(const char* ssid, const char* passphrase);
 
 
     /*
 	* Start the Access Point
 	*/
-	static bool wifiStartAP(const char* ssid, const char* pwd, uint8_t channel, uint8_t enc, uint8_t espMode);
+	bool wifiStartAP(const char* ssid, const char* pwd, uint8_t channel, uint8_t enc, uint8_t espMode);
 
 
     /*
 	 * Set ip configuration disabling dhcp client
 	 */
-    static void config(IPAddress& local_ip);
+    void config(IPAddress& local_ip);
 
     /*
 	 * Set ip configuration disabling dhcp client
 	 */
-    static void configAP(IPAddress& local_ip);
+    void configAP(IPAddress& local_ip);
 
 
     /*
@@ -157,30 +157,30 @@ public:
      *
      * return: WL_SUCCESS or WL_FAILURE
      */
-    static int8_t disconnect();
+    int8_t disconnect();
 
     /*
      *
      *
      * return: one value of wl_status_t enum
      */
-    static uint8_t getConnectionStatus();
+    uint8_t getConnectionStatus();
 
     /*
      * Get the interface MAC address.
      *
      * return: pointer to uint8_t array with length WL_MAC_ADDR_LENGTH
      */
-    static uint8_t* getMacAddress();
+    uint8_t* getMacAddress();
 
     /*
      * Get the interface IP address.
      *
      * return: copy the ip address value in IPAddress object
      */
-    static void getIpAddress(IPAddress& ip);
+    void getIpAddress(IPAddress& ip);
 
-	static void getIpAddressAP(IPAddress& ip);
+	void getIpAddressAP(IPAddress& ip);
 
     /*
      * Get the interface IP netmask.
@@ -188,7 +188,7 @@ public:
      *
      * return: true if successful
      */
-    static bool getNetmask(IPAddress& mask);
+    bool getNetmask(IPAddress& mask);
 
     /*
      * Get the interface IP gateway.
@@ -196,14 +196,14 @@ public:
      *
      * return: true if successful
      */
-    static bool getGateway(IPAddress& mask);
+    bool getGateway(IPAddress& mask);
 
     /*
      * Return the current SSID associated with the network
      *
      * return: ssid string
      */
-    static char* getCurrentSSID();
+    char* getCurrentSSID();
 
     /*
      * Return the current BSSID associated with the network.
@@ -211,7 +211,7 @@ public:
      *
      * return: pointer to uint8_t array with length WL_MAC_ADDR_LENGTH
      */
-    static uint8_t* getCurrentBSSID();
+    uint8_t* getCurrentBSSID();
 
     /*
      * Return the current RSSI /Received Signal Strength in dBm)
@@ -219,14 +219,14 @@ public:
      *
      * return: signed value
      */
-    static int32_t getCurrentRSSI();
+    int32_t getCurrentRSSI();
 
     /*
      * Get the networks available
      *
      * return: Number of discovered networks
      */
-    static uint8_t getScanNetworks();
+    uint8_t getScanNetworks();
 
 	/*
      * Return the SSID discovered during the network scan.
@@ -235,7 +235,7 @@ public:
 	 *
      * return: ssid string of the specified item on the networks scanned list
      */
-    static char* getSSIDNetoworks(uint8_t networkItem);
+    char* getSSIDNetoworks(uint8_t networkItem);
 
     /*
      * Return the RSSI of the networks discovered during the scanNetworks
@@ -244,7 +244,7 @@ public:
 	 *
      * return: signed value of RSSI of the specified item on the networks scanned list
      */
-    static int32_t getRSSINetoworks(uint8_t networkItem);
+    int32_t getRSSINetoworks(uint8_t networkItem);
 
     /*
      * Return the encryption type of the networks discovered during the scanNetworks
@@ -253,13 +253,13 @@ public:
 	 *
      * return: encryption type (enum wl_enc_type) of the specified item on the networks scanned list
      */
-    static uint8_t getEncTypeNetowrks(uint8_t networkItem);
+    uint8_t getEncTypeNetowrks(uint8_t networkItem);
 
 
     /*
      * Get the firmware version
      */
-    static char* getFwVersion();
+    char* getFwVersion();
 
 
 	////////////////////////////////////////////////////////////////////////////
@@ -267,73 +267,72 @@ public:
 	////////////////////////////////////////////////////////////////////////////
 
 
-    static bool startServer(uint16_t port, uint8_t sock);
-    static bool startClient(const char* host, uint16_t port, uint8_t sock, uint8_t protMode);
-    static void stopClient(uint8_t sock);
-    static uint8_t getServerState(uint8_t sock);
-    static uint8_t getClientState(uint8_t sock);
-    static bool getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose);
-    static int getDataBuf(uint8_t connId, uint8_t *buf, uint16_t bufSize);
-    static bool sendData(uint8_t sock, const uint8_t *data, uint16_t len);
-    static bool sendData(uint8_t sock, const __FlashStringHelper *data, uint16_t len, bool appendCrLf=false);
-	static bool sendDataUdp(uint8_t sock, const char* host, uint16_t port, const uint8_t *data, uint16_t len);
-    static uint16_t availData(uint8_t connId);
+    bool startServer(uint16_t port, uint8_t sock);
+    bool startClient(const char* host, uint16_t port, uint8_t sock, uint8_t protMode);
+    void stopClient(uint8_t sock);
+    uint8_t getServerState(uint8_t sock);
+    uint8_t getClientState(uint8_t sock);
+    bool getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose);
+    int getDataBuf(uint8_t connId, uint8_t *buf, uint16_t bufSize);
+    bool sendData(uint8_t sock, const uint8_t *data, uint16_t len);
+    bool sendData(uint8_t sock, const __FlashStringHelper *data, uint16_t len, bool appendCrLf=false);
+	bool sendDataUdp(uint8_t sock, const char* host, uint16_t port, const uint8_t *data, uint16_t len);
+    uint16_t availData(uint8_t connId);
 
+	bool ping(const char *host);
+    void reset();
 
-	static bool ping(const char *host);
-    static void reset();
-
-    static void getRemoteIpAddress(IPAddress& ip);
-    static uint16_t getRemotePort();
+    void getRemoteIpAddress(IPAddress& ip);
+    uint16_t getRemotePort();
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 private:
-	static UART_HandleTypeDef *m_espUART;
+	UART_HandleTypeDef *m_espUART;
 
-	static long _bufPos;
-	static uint8_t _connId;
+	long m_bufPos;
+	uint8_t m_connId;
 
-	static uint16_t _remotePort;
-	static uint8_t  _remoteIp[WL_IPV4_LENGTH];
+	uint16_t m_remotePort;
+	uint8_t  m_remoteIp[WL_IPV4_LENGTH];
 
 
 	// firmware version string
-	static char 	fwVersion[WL_FW_VER_LENGTH];
+	char 	m_fwVersion[WL_FW_VER_LENGTH];
 
 	// settings of requested network
-	static char 	_networkSsid[WL_NETWORKS_LIST_MAXNUM][WL_SSID_MAX_LENGTH];
-	static int32_t 	_networkRssi[WL_NETWORKS_LIST_MAXNUM];
-	static uint8_t 	_networkEncr[WL_NETWORKS_LIST_MAXNUM];
+	char 	m_networkSsid[WL_NETWORKS_LIST_MAXNUM][WL_SSID_MAX_LENGTH];
+	int32_t 	m_networkRssi[WL_NETWORKS_LIST_MAXNUM];
+	uint8_t 	m_networkEncr[WL_NETWORKS_LIST_MAXNUM];
 
 
 	// settings of current selected network
-	static char 	_ssid[WL_SSID_MAX_LENGTH];
-	static uint8_t 	_bssid[WL_MAC_ADDR_LENGTH];
-	static uint8_t 	_mac[WL_MAC_ADDR_LENGTH];
-	static uint8_t  _localIp[WL_IPV4_LENGTH];
+	char 	m_ssid[WL_SSID_MAX_LENGTH];
+	uint8_t m_bssid[WL_MAC_ADDR_LENGTH];
+	uint8_t m_mac[WL_MAC_ADDR_LENGTH];
+	uint8_t m_localIp[WL_IPV4_LENGTH];
 
 
 	// the ring buffer is used to search the tags in the stream
-	static RingBuffer ringBuf;
+	RingBuffer* m_ringBuf;
 
 
 	//static int sendCmd(const char* cmd, int timeout=1000);
-	static int sendCmd(const char* cmd, int timeout=1000);
-	static int sendCmd(const char* cmd, int timeout, ...);
+	int sendCmd(const char* cmd, int timeout=1000);
+	int sendCmd(const char* cmd, int timeout, ...);
 
-	static bool sendCmdGet(const char* cmd, const char* startTag, const char* endTag, char* outStr, int outStrLen);
+	bool sendCmdGet(const char* cmd, const char* startTag, const char* endTag, char* outStr, int outStrLen);
 
-	static int readUntil(unsigned int timeout, const char* tag=NULL, bool findTags=true);
+	int readUntil(unsigned int timeout, const char* tag=NULL, bool findTags=true);
 
-	static void espEmptyBuf(bool warn=true);
+	void espEmptyBuf(bool warn=true);
 
-	static int timedRead();
-	static int print(const char *str, uint32_t timeout = 1000);
-	static int println(const char *str, uint32_t timeout = 1000);
+	int timedRead();
+	int print(const char *str, uint32_t timeout = 1000);
+	int println(const char *str, uint32_t timeout = 1000);
 	bool available(void);
-	static char read(int timeout);
+	char read(int timeout);
 
 
 	friend class WiFiEsp;
@@ -341,7 +340,5 @@ private:
 	friend class WiFiEspClient;
 	friend class WiFiEspUdp;
 };
-
-extern EspDrv espDrv;
 
 #endif

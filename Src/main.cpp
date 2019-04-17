@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include "adc.h"
 #include "i2c.h"
@@ -29,7 +30,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
 #include "NS_energyShield2.h"
 #include "SFE_BMP180.h"
 #include "dwt_stm32_delay.h"
@@ -124,7 +124,7 @@ int main(void)
 	DWT_Delay_Init();
 
 	// initialize Wifi
-	WiFiEsp.init();
+	WiFiEsp.init(&husart2);
 
 	/* USER CODE END 2 */
 
