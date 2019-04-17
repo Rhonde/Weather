@@ -30,7 +30,7 @@ class WiFiEspServer : public Server
 {
 
 public:
-	WiFiEspServer(uint16_t port);
+	WiFiEspServer(uint16_t port, WiFiEspClass *_wifi);
 
 
 	/*
@@ -54,9 +54,10 @@ public:
 
 
 private:
-	uint16_t _port;
-	uint8_t _sock;
-	bool _started;
+	uint16_t m_port;
+	uint8_t m_sock;
+	bool m_started;
+	WiFiEspClass *m_wifi;
 
 };
 

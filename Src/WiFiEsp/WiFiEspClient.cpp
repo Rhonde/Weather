@@ -25,14 +25,16 @@
 #include "utility/EspDrv.h"
 #include "utility/debug.h"
 
-WiFiEspClient::WiFiEspClient() :
-		_sock(255)
+WiFiEspClient::WiFiEspClient(WiFiEspClass* _wifi) :
 {
+	m_sock = 255;
+	m_wifi = _wifi;
 }
 
-WiFiEspClient::WiFiEspClient(uint8_t sock) :
-		_sock(sock)
+WiFiEspClient::WiFiEspClient(WiFiEspClass* _wifi, uint8_t sock) :
 {
+	m_wifi = _wifi;
+	m_sock = sock;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,18 +43,16 @@ WiFiEspClient::WiFiEspClient(uint8_t sock) :
 
 // the standard print method will call write for each character in the buffer
 // this is very slow on ESP
-size_t WiFiEspClient::print(const __FlashStringHelper *ifsh)
+size_t WiFiEspClient::print(const char *str)
 {
-	char *str = (char *) ifsh;
 	printf(str);
 	return strlen(str);
 }
 
 // if we do override this, the standard println will call the print
 // method twice
-size_t WiFiEspClient::println(const __FlashStringHelper *ifsh)
+size_t WiFiEspClient::println(const char *str)
 {
-	char *str = (char *) ifsh;
 	printf(str);
 	printf("\n");
 	return strlen(str);
@@ -92,14 +92,15 @@ int WiFiEspClient::connect(const char* host, uint16_t port, uint8_t protMode)
 {
 	LOGINFO1("Connecting to", host);
 
-	_sock = WiFiEspClass::getFreeSocket();
+	m_sock = m_wifi->getFreeSocket();
 
-	if (_sock != NO_SOCKET_AVAIL)
+	if (m_sock != NO_SOCKET_AVAIL)
 	{
-		if (!EspDrv::startClient(host, port, _sock, protMode))
+
+		if (m_wifi->GetDrv()->startClient(host, port, _sock, protMode))
 			return 0;
 
-		WiFiEspClass::allocateSocket(_sock);
+		m_wifi->allocateSocket(_sock);
 	}
 	else
 	{

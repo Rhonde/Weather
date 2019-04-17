@@ -284,7 +284,7 @@ public:
 
     void getRemoteIpAddress(IPAddress& ip);
     uint16_t getRemotePort();
-
+    uint8_t getConnId() {return m_connId;};
 
 ////////////////////////////////////////////////////////////////////////////////
 

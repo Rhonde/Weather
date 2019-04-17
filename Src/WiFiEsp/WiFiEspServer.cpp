@@ -17,15 +17,17 @@ along with The Arduino WiFiEsp library.  If not, see
 --------------------------------------------------------------------*/
 
 #include "WiFiEspServer.h"
+#include "WiFiEsp.h"
 
 #include "utility/EspDrv.h"
 #include "utility/debug.h"
 
 
 
-WiFiEspServer::WiFiEspServer(uint16_t port)
+WiFiEspServer::WiFiEspServer(uint16_t port, WiFiEspClass *_wifi)
 {
-	_port = port;
+	m_port = port;
+	m_wifi = _wifi;
 }
 
 void WiFiEspServer::begin()
@@ -34,22 +36,22 @@ void WiFiEspServer::begin()
 
 	/* The ESP Module only allows socket 1 to be used for the server */
 #if 0
-	_sock = WiFiEspClass::getFreeSocket();
-	if (_sock == SOCK_NOT_AVAIL)
+	m_sock = WiFiEspClass::getFreeSocket();
+	if (m_sock == SOCK_NOT_AVAIL)
 	  {
 	    LOGERROR("No socket available for server");
 	    return;
 	  }
 #else
-	_sock = 1; // If this is already in use, the startServer attempt will fail
+	m_sock = 1; // If this is already in use, the startServer attempt will fail
 #endif
-	WiFiEspClass::allocateSocket(_sock);
+	m_wifi->allocateSocket(m_sock);
 
-	_started = EspDrv::startServer(_port, _sock);
+	m_started = m_wifi->GetDrv()->startServer(m_port, m_sock);
 
-	if (_started)
+	if (m_started)
 	{
-		LOGINFO1D("Server started on port", _port);
+		LOGINFO1D("Server started on port", m_port);
 	}
 	else
 	{
@@ -60,13 +62,14 @@ void WiFiEspServer::begin()
 WiFiEspClient WiFiEspServer::available(uint8_t* status)
 {
 	// TODO the original method seems to handle automatic server restart
+	EspDrv *espDrv = m_wifi->GetDrv();
 
-	int bytes = EspDrv::availData(0);
-	if (bytes>0)
+	int bytes = espDrv->availData(0);
+	if (bytes > 0)
 	{
-		LOGINFO1D("New client", EspDrv::_connId);
-		WiFiEspClass::allocateSocket(EspDrv::_connId);
-		WiFiEspClient client(EspDrv::_connId);
+		LOGINFO1D("New client", espDrv->m_connId);
+		m_wifi->allocateSocket(espDrv->m_connId);
+		WiFiEspClient client(espDrv->m_connId);
 		return client;
 	}
 
@@ -89,7 +92,7 @@ size_t WiFiEspServer::write(const uint8_t *buffer, size_t size)
 
     for (int sock = 0; sock < MAX_SOCK_NUM; sock++)
     {
-        if (WiFiEspClass::_state[sock] != 0)
+        if (m_wifi->m_state[sock] != 0)
         {
         	WiFiEspClient client(sock);
             n += client.write(buffer, size);

@@ -38,7 +38,7 @@ class WiFiEspClass
 {
 
 public:
-	WiFiEspClass(GPIO_TypeDef  *_reset_port, uint8_t _reset_pin, GPIO_TypeDef  *_ena_port, uint8_t _ena_pin);
+	WiFiEspClass(GPIO_TypeDef  *_reset_port, uint32_t _reset_pin, GPIO_TypeDef  *_ena_port, uint32_t _ena_pin);
 
 
 
@@ -256,6 +256,7 @@ public:
 	* Ping a host.
 	*/
 	bool ping(const char *host);
+	EspDrv *GetDrv(void) { return m_espDrv; }
 
 	int16_t m_state[MAX_SOCK_NUM];
 	uint16_t m_server_port[MAX_SOCK_NUM];

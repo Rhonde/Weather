@@ -18,8 +18,7 @@
 
 #include "WiFiEsp.h"
 
-WiFiEspClass::WiFiEspClass(GPIO_TypeDef *_reset_port, uint8_t _reset_pin,
-		GPIO_TypeDef *_ena_port, uint8_t _ena_pin)
+WiFiEspClass::WiFiEspClass(GPIO_TypeDef *_reset_port, uint32_t _reset_pin, GPIO_TypeDef *_ena_port, uint32_t _ena_pin)
 {
 	m_resetPort = _reset_port;
 	m_resetPin = _reset_pin;
