@@ -26,15 +26,27 @@ uint16_t 	WiFiEspClass::_server_port[MAX_SOCK_NUM] = { 0, 0, 0, 0 };
 uint8_t WiFiEspClass::espMode = 0;
 
 
-WiFiEspClass::WiFiEspClass()
+WiFiEspClass::WiFiEspClass(GPIO_TypeDef  *_reset_port, uint32_t _reset_pin, GPIO_TypeDef  *_ena_port, uint32_t _ena_pin)
 {
+	m_resetPort = _reset_port;
+	m_resetPin = _reset_pin;
+	m_enaPort = _ena_port;
+	m_enaPin = _ena_pin;
+
 
 }
 
-void WiFiEspClass::init(UART_HandleTypeDef* espUART)
+void WiFiEspClass::init(UART_HandleTypeDef* _espUART)
 {
     LOGINFO("Initializing ESP module");
-	EspDrv::wifiDriverInit(espUART);
+
+    HAL_GPIO_WritePin(m_enaPort, m_enaPin, GPIO_PIN_SET);		// set enable pin to '1'
+    HAL_GPIO_WritePin(m_resetPort, m_resetPin, GPIO_PIN_RESET);	// reset low
+    HAL_Delay(10);												// leave it low for 10 mS (TODO: find docs on this)
+    HAL_GPIO_WritePin(m_resetPort, m_resetPin, GPIO_PIN_SET);	// reset hi
+    m_espUART = _espUART;
+
+    EspDrv::wifiDriverInit(m_espUART);
 }
 
 

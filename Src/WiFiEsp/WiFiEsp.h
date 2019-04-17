@@ -42,7 +42,7 @@ public:
 	static int16_t _state[MAX_SOCK_NUM];
 	static uint16_t _server_port[MAX_SOCK_NUM];
 
-	WiFiEspClass();
+	WiFiEspClass(GPIO_TypeDef  *_reset_port, uint8_t _reset_pin, GPIO_TypeDef  *_ena_port, uint8_t _ena_pin);
 
 
 	/**
@@ -50,7 +50,7 @@ public:
 	*
 	* param espSerial: the serial interface (HW or SW) used to communicate with the ESP module
 	*/
-	static void init(Stream* espSerial);
+	static void init(UART_HandleTypeDef* espUART);
 
 
 	/**
@@ -267,8 +267,12 @@ private:
 	static uint8_t getFreeSocket();
 	static void allocateSocket(uint8_t sock);
 	static void releaseSocket(uint8_t sock);
-
 	static uint8_t espMode;
+	GPIO_TypeDef   *m_resetPort;
+	uint8_t			m_resetPin;
+	GPIO_TypeDef   *m_enaPort;
+	uint8_t			m_enaPin;
+	UART_HandleTypeDef* m_espUART;
 };
 
 extern WiFiEspClass WiFi;

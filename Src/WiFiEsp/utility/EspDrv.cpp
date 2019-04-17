@@ -41,7 +41,7 @@ typedef enum
 	TAG_OK, TAG_ERROR, TAG_FAIL, TAG_SENDOK, TAG_CONNECT
 } TagsEnum;
 
-UART_HandleTypeDef *EspDrv::espUART;
+UART_HandleTypeDef *EspDrv::m_espUART;
 
 RingBuffer EspDrv::ringBuf(32);
 
@@ -63,11 +63,11 @@ uint8_t EspDrv::_connId = 0;
 uint16_t EspDrv::_remotePort = 0;
 uint8_t EspDrv::_remoteIp[] = { 0 };
 
-void EspDrv::wifiDriverInit(UART_HandleTypeDef *espUART)
+void EspDrv::wifiDriverInit(UART_HandleTypeDef *_espUART)
 {
 	LOGDEBUG("> wifiDriverInit");
 
-	EspDrv::espUART = espUART;
+	EspDrv::m_espUART = _espUART;
 
 	bool initOK = false;
 
@@ -458,7 +458,7 @@ uint8_t EspDrv::getScanNetworks()
 	LOGDEBUG(">> AT+CWLAP");
 
 
-	println("AT+CWLAP");
+	EspDrv::println("AT+CWLAP");
 
 	idx = readUntil(10000, "+CWLAP:(");
 
@@ -955,12 +955,14 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag, const char* endTa
  */
 int EspDrv::sendCmd(const char* cmd, int timeout)
 {
+	HAL_StatusTypeDef status;
 	espEmptyBuf();
 
 	LOGDEBUG("----------------------------------------------");
 	LOGDEBUG1(">>", cmd);
 
-	espSerial->println(cmd);
+
+	status = HAL_UART_Transmit(m_espUART, cmd, strlen(cmd), timeout);
 
 	int idx = readUntil(timeout);
 
@@ -989,7 +991,7 @@ int EspDrv::sendCmd(const char* cmd, int timeout, ...)
 	LOGDEBUG("----------------------------------------------");
 	LOGDEBUG1(">>", cmdBuf);
 
-	espSerial->println(cmdBuf);
+	println(cmdBuf);
 
 	int idx = readUntil(timeout);
 
@@ -1057,7 +1059,7 @@ void EspDrv::espEmptyBuf(bool warn)
 	uint8_t buf[4];
 
 
-	while(HAL_UART_Receive(espUART, &buf, 1, _timeout) == HAL_OK)
+	while(HAL_UART_Receive(m_espUART, &buf, 1, _timeout) == HAL_OK)
 	{
 		if (i > 0 and warn == true)
 			LOGDEBUG0C(c);
@@ -1081,23 +1083,23 @@ char EspDrv::read(timeout)
 	uint8_t buf[4];
 
 
-	if(HAL_UART_Receive(espUART, &buf, 1, _timeout) == HAL_OK)
+	if(HAL_UART_Receive(m_espUART, &buf, 1, _timeout) == HAL_OK)
 		return buf[0];
 
 	return -1;
 }
 
-int EspDrv::print(uint8_t *str)
+int EspDrv::print(uint8_t *str, uint32_t timeout)
 {
-	HAL_UART_Transmit(espUART, (uint8_t *) str, strlen(str), 100);
+	HAL_UART_Transmit(m_espUART, (uint8_t *) str, strlen(str), timeout);
 	return strlen(str);
 }
 
-int EspDrv::println(uint8_t *str)
+int EspDrv::println(uint8_t *str, uint32_t timeout)
 {
-	HAL_UART_Transmit(espUART, (uint8_t *) str, strlen(str), 10);
+	HAL_UART_Transmit(espUART, (uint8_t *) str, strlen(str), timeout);
 	char newline[3] = "\r\n";
-	HAL_UART_Transmit(espUART, (uint8_t *) newline, 2, 10);
+	HAL_UART_Transmit(espUART, (uint8_t *) newline, 2, timeout);
 
 	return strlen(str)+2;
 

@@ -32,8 +32,8 @@
 #include <stdio.h>
 #include "NS_energyShield2.h"
 #include "SFE_BMP180.h"
-#include "DHT11.h"
 #include "dwt_stm32_delay.h"
+#include "WiFiEsp.h"
 
 /* USER CODE END Includes */
 
@@ -56,7 +56,7 @@
 /* USER CODE BEGIN PV */
 NS_energyShield2 Es2(&hi2c3);		// use 3rd I2C
 SFE_BMP180 Bmp(&hi2c3);
-DHT11 dht(GPIOA, GPIO_PIN_1);
+WiFiEspClass WiFiEsp(GPIOA, GPIO_PIN_10, GPIOA, GPIO_PIN_8);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -123,8 +123,8 @@ int main(void)
 
 	DWT_Delay_Init();
 
-	dht.ReadSensor();		// dont step thru this code -- its time sensitive
-	printf("DHT11:: Temp=%f, Humidity=%f\n", dht.GetTemperature(), dht.GetHumidity());
+	// initialize Wifi
+	WiFiEsp.init();
 
 	/* USER CODE END 2 */
 

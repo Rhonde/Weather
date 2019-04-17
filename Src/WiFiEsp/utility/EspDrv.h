@@ -290,7 +290,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 private:
-	static UART_HandleTypeDef *espUART;
+	static UART_HandleTypeDef *m_espUART;
 
 	static long _bufPos;
 	static uint8_t _connId;
@@ -330,8 +330,8 @@ private:
 	static void espEmptyBuf(bool warn=true);
 
 	static int timedRead();
-	static int print(uint8_t *str);
-	static int println(uint8_t *str);
+	static int print(const char *str, uint32_t timeout = 1000);
+	static int println(const char *str, uint32_t timeout = 1000);
 	bool available(void);
 	static char read(int timeout);
 
