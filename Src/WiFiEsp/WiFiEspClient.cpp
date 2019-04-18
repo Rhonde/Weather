@@ -25,13 +25,13 @@
 #include "utility/EspDrv.h"
 #include "utility/debug.h"
 
-WiFiEspClient::WiFiEspClient(WiFiEspClass* _wifi) :
+WiFiEspClient::WiFiEspClient(WiFiEspClass* _wifi)
 {
 	m_sock = 255;
 	m_wifi = _wifi;
 }
 
-WiFiEspClient::WiFiEspClient(WiFiEspClass* _wifi, uint8_t sock) :
+WiFiEspClient::WiFiEspClient(WiFiEspClass* _wifi, uint8_t sock)
 {
 	m_wifi = _wifi;
 	m_sock = sock;
@@ -97,10 +97,10 @@ int WiFiEspClient::connect(const char* host, uint16_t port, uint8_t protMode)
 	if (m_sock != NO_SOCKET_AVAIL)
 	{
 
-		if (m_wifi->GetDrv()->startClient(host, port, _sock, protMode))
+		if (m_wifi->GetDrv()->startClient(host, port, m_sock, protMode))
 			return 0;
 
-		m_wifi->allocateSocket(_sock);
+		m_wifi->allocateSocket(m_sock);
 	}
 	else
 	{
@@ -117,17 +117,17 @@ size_t WiFiEspClient::write(uint8_t b)
 
 size_t WiFiEspClient::write(const uint8_t *buf, size_t size)
 {
-	if (_sock >= MAX_SOCK_NUM or size == 0)
+	if (m_sock >= MAX_SOCK_NUM or size == 0)
 	{
 		setWriteError();
 		return 0;
 	}
 
-	bool r = EspDrv::sendData(_sock, buf, size);
+	bool r = m_wifi->GetDrv()->sendData(m_sock, buf, size);
 	if (!r)
 	{
 		setWriteError();
-		LOGERROR1D("Failed to write to socket", _sock);
+		LOGERROR1D("Failed to write to socket", m_sock);
 		HAL_Delay(4000);
 		stop();
 		return 0;
@@ -138,9 +138,9 @@ size_t WiFiEspClient::write(const uint8_t *buf, size_t size)
 
 int WiFiEspClient::available()
 {
-	if (_sock != 255)
+	if (m_sock != 255)
 	{
-		int bytes = EspDrv::availData(_sock);
+		int bytes = m_wifi->GetDrv()->availData(m_sock);
 		if (bytes > 0)
 		{
 			return bytes;
@@ -157,12 +157,12 @@ int WiFiEspClient::read()
 		return -1;
 
 	bool connClose = false;
-	EspDrv::getData(_sock, &b, false, &connClose);
+	m_wifi->GetDrv()->getData(m_sock, &b, false, &connClose);
 
 	if (connClose)
 	{
-		WiFiEspClass::releaseSocket(_sock);
-		_sock = 255;
+		m_wifi->releaseSocket(m_sock);
+		m_sock = 255;
 	}
 
 	return b;
@@ -172,7 +172,7 @@ int WiFiEspClient::read(uint8_t* buf, size_t size)
 {
 	if (!available())
 		return -1;
-	return EspDrv::getDataBuf(_sock, buf, size);
+	return m_wifi->GetDrv()->getDataBuf(m_sock, buf, size);
 }
 
 int WiFiEspClient::peek()
@@ -182,12 +182,12 @@ int WiFiEspClient::peek()
 		return -1;
 
 	bool connClose = false;
-	EspDrv::getData(_sock, &b, true, &connClose);
+	m_wifi->GetDrv()->getData(m_sock, &b, true, &connClose);
 
 	if (connClose)
 	{
-		WiFiEspClass::releaseSocket(_sock);
-		_sock = 255;
+		m_wifi->releaseSocket(m_sock);
+		m_sock = 255;
 	}
 
 	return b;
@@ -209,15 +209,15 @@ bool WiFiEspClient::flush(unsigned int maxWaitMs)
 
 bool WiFiEspClient::stop(unsigned int maxWaitMs)
 {
-	if (_sock == 255)
+	if (m_sock == 255)
 		return true;
 
-	LOGINFO1D("Disconnecting ", _sock);
+	LOGINFO1D("Disconnecting ", m_sock);
 
-	EspDrv::stopClient(_sock);
+	m_wifi->GetDrv()->stopClient(m_sock);
 
-	WiFiEspClass::releaseSocket(_sock);
-	_sock = 255;
+	m_wifi->releaseSocket(m_sock);
+	m_sock = 255;
 	return true;
 }
 
@@ -228,7 +228,7 @@ uint8_t WiFiEspClient::connected()
 
 WiFiEspClient::operator bool()
 {
-	return _sock != 255;
+	return m_sock != 255;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,23 +237,23 @@ WiFiEspClient::operator bool()
 
 uint8_t WiFiEspClient::status()
 {
-	if (_sock == 255)
+	if (m_sock == 255)
 	{
 		return CLOSED;
 	}
 
-	if (EspDrv::availData(_sock))
+	if (m_wifi->GetDrv()->availData(m_sock))
 	{
 		return ESTABLISHED;
 	}
 
-	if (EspDrv::getClientState(_sock))
+	if (m_wifi->GetDrv()->getClientState(m_sock))
 	{
 		return ESTABLISHED;
 	}
 
-	WiFiEspClass::releaseSocket(_sock);
-	_sock = 255;
+	m_wifi->releaseSocket(m_sock);
+	m_sock = 255;
 
 	return CLOSED;
 }
@@ -261,7 +261,7 @@ uint8_t WiFiEspClient::status()
 IPAddress WiFiEspClient::remoteIP()
 {
 	IPAddress ret;
-	EspDrv::getRemoteIpAddress(ret);
+	m_wifi->GetDrv()->getRemoteIpAddress(ret);
 	return ret;
 }
 
@@ -273,17 +273,17 @@ size_t WiFiEspClient::printFSH(const __FlashStringHelper *ifsh, bool appendCrLf)
 {
 	size_t size = strlen_P((char*) ifsh);
 
-	if (_sock >= MAX_SOCK_NUM or size == 0)
+	if (m_sock >= MAX_SOCK_NUM or size == 0)
 	{
 		setWriteError();
 		return 0;
 	}
 
-	bool r = EspDrv::sendData(_sock, ifsh, size, appendCrLf);
+	bool r = m_wifi->GetDrv()->sendData(m_sock, ifsh, size, appendCrLf);
 	if (!r)
 	{
 		setWriteError();
-		LOGERROR1D("Failed to write to socket", _sock);
+		LOGERROR1D("Failed to write to socket", m_sock);
 		HAL_Delay(4000);
 		stop();
 		return 0;

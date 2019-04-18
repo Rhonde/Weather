@@ -55,26 +55,26 @@ EspDrv::EspDrv()
 	}
 
 	// Cached values of retrieved data
-	for(ix = 0; ix < WL_SSID_MAX_LENGTH; ix++)
+	for(int ix = 0; ix < WL_SSID_MAX_LENGTH; ix++)
 		m_ssid[ix] = 0;
 
-	for(ix = 0; ix < WL_MAC_ADDR_LENGTH; ix++)
+	for(int ix = 0; ix < WL_MAC_ADDR_LENGTH; ix++)
 	{
 		m_bssid[ix] = 0;
 		m_mac[ix] =0;
 	}
-	for(ix = 0; ix < WL_IPV4_LENGTH; ix++)
+	for(int ix = 0; ix < WL_IPV4_LENGTH; ix++)
 		m_localIp[ix] = 0;
 
-	for(ix = 0; ix < sizeof(fwVersion); ix++)
+	for(int ix = 0; ix < sizeof(m_fwVersion); ix++)
 		m_fwVersion[ix] = 0;
 
 	m_bufPos = 0;
 	m_connId = 0;
 
 	m_remotePort = 0;
-	for(ix = 0; ix < sizeof(m_remoteIp); ix++)
-		m_remoteIp[ix] = { 0 };
+	for(int ix = 0; ix < sizeof(m_remoteIp); ix++)
+		m_remoteIp[ix] = 0;
 
 	m_ringBuf = new RingBuffer(32);
 
@@ -340,7 +340,7 @@ uint8_t* EspDrv::getMacAddress()
 {
 	LOGDEBUG("> getMacAddress");
 
-	memset(m__mac, 0, WL_MAC_ADDR_LENGTH);
+	memset(m_mac, 0, WL_MAC_ADDR_LENGTH);
 
 	char buf[20];
 	if (sendCmdGet("AT+CIFSR", ":STAMAC,\"", "\"", buf, sizeof(buf)))
@@ -348,19 +348,19 @@ uint8_t* EspDrv::getMacAddress()
 		char* token;
 
 		token = strtok(buf, ":");
-		_mac[5] = (uint8_t) strtol(token, NULL, 16);
+		m_mac[5] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_mac[4] = (uint8_t) strtol(token, NULL, 16);
+		m_mac[4] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_mac[3] = (uint8_t) strtol(token, NULL, 16);
+		m_mac[3] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_mac[2] = (uint8_t) strtol(token, NULL, 16);
+		m_mac[2] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_mac[1] = (uint8_t) strtol(token, NULL, 16);
+		m_mac[1] = (uint8_t) strtol(token, NULL, 16);
 		token = strtok(NULL, ":");
-		_mac[0] = (uint8_t) strtol(token, NULL, 16);
+		m_mac[0] = (uint8_t) strtol(token, NULL, 16);
 	}
-	return _mac;
+	return m_mac;
 }
 
 void EspDrv::getIpAddress(IPAddress& ip)
@@ -382,7 +382,7 @@ void EspDrv::getIpAddress(IPAddress& ip)
 		token = strtok(NULL, ".");
 		m_localIp[3] = atoi(token);
 
-		ip = _localIp;
+		ip = m_localIp;
 	}
 }
 
@@ -414,9 +414,9 @@ char* EspDrv::getCurrentSSID()
 	LOGDEBUG("> getCurrentSSID");
 
 	m_ssid[0] = 0;
-	sendCmdGet("AT+CWJAP?", "+CWJAP:\"", "\"", _ssid, sizeof(_ssid));
+	sendCmdGet("AT+CWJAP?", "+CWJAP:\"", "\"", m_ssid, sizeof(m_ssid));
 
-	return _ssid;
+	return m_ssid;
 }
 
 uint8_t* EspDrv::getCurrentBSSID()
@@ -474,13 +474,13 @@ uint8_t EspDrv::getScanNetworks()
 	LOGDEBUG(">> AT+CWLAP");
 
 
-	EspDrv::println("AT+CWLAP");
+	println("AT+CWLAP");
 
 	idx = readUntil(10000, "+CWLAP:(");
 
 	while (idx == NUMESPTAGS)
 	{
-		m_networkEncr[ssidListNum] = espSerial->parseInt();
+		//TODO: m_networkEncr[ssidListNum] = espSerial->parseInt();
 
 		// discard , and " characters
 		readUntil(1000, "\"");
@@ -648,7 +648,9 @@ uint8_t EspDrv::getServerState(uint8_t sock)
 
 uint16_t EspDrv::availData(uint8_t connId)
 {
-	uint8_t buf[80];
+/****
+ * TODO
+ 	uint8_t buf[80];
 
 	// if there is data in the buffer
 	if (m_bufPos > 0)
@@ -694,7 +696,9 @@ uint16_t EspDrv::availData(uint8_t connId)
 				return m_bufPos;
 		}
 	}
+************/
 	return 0;
+
 }
 
 bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
@@ -707,7 +711,7 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 	long _startMillis = HAL_GetTick();
 	do
 	{
-		// if (espSerial->available())
+		// TODO if (espSerial->available())
 		{
 			if (peek)
 			{
@@ -805,7 +809,7 @@ bool EspDrv::sendData(uint8_t sock, const uint8_t *data, uint16_t len)
 		return false;
 	}
 
-	espSerial->write(data, len);
+	HAL_UART_Transmit(m_espUART, data, len, 1000);
 
 	idx = readUntil(2000);
 	if (idx != TAG_SENDOK)
@@ -818,33 +822,38 @@ bool EspDrv::sendData(uint8_t sock, const uint8_t *data, uint16_t len)
 }
 
 // Overrided sendData method for __FlashStringHelper strings
-bool EspDrv::sendData(uint8_t sock, const __FlashStringHelper *data, uint16_t len, bool appendCrLf)
+bool EspDrv::sendData(uint8_t sock, const char *data, uint16_t len, bool appendCrLf)
 {
 	LOGDEBUG2DD("> sendData:", sock, len);
 
 	char cmdBuf[20];
+
 	uint16_t len2 = len + 2*appendCrLf;
 	sprintf(cmdBuf, "AT+CIPSEND=%d,%u", sock, len2);
-	//espSerial->println(cmdBuf);
+
+	HAL_UART_Transmit(m_espUART, cmdBuf, strlen(cmdBuf), 1000);
 
 	int idx = readUntil(1000, (char *)">", false);
+
 	if(idx!=NUMESPTAGS)
 	{
 		LOGERROR("Data packet send error (1)");
 		return false;
 	}
 
-	//espSerial->write(data, len);
-	PGM_P p = reinterpret_cast<PGM_P>(data);
-	for (uint16_t i=0; i<len; i++)
-	{
-		unsigned char c = pgm_read_byte(p++);
-		espSerial->write(c);
-	}
+	HAL_UART_Transmit(m_espUART, data, len, 1000);
+
+//	PGM_P p = reinterpret_cast<PGM_P>(data);
+//
+//	for (uint16_t i=0; i<len; i++)
+//	{
+//		unsigned char c = pgm_read_byte(p++);
+//		espSerial->write(c);
+//	}
+
 	if (appendCrLf)
 	{
-		espSerial->write('\r');
-		espSerial->write('\n');
+		HAL_UART_Transmit(m_espUART, "\r\n", 2, 1000);
 	}
 
 	idx = readUntil(2000);
@@ -857,8 +866,7 @@ bool EspDrv::sendData(uint8_t sock, const __FlashStringHelper *data, uint16_t le
 	return true;
 }
 
-bool EspDrv::sendDataUdp(uint8_t sock, const char* host, uint16_t port,
-		const uint8_t *data, uint16_t len)
+bool EspDrv::sendDataUdp(uint8_t sock, const char* host, uint16_t port,	const uint8_t *data, uint16_t len)
 {
 	LOGDEBUG2DD("> sendDataUdp:", sock, len);
 	LOGDEBUG2SD("> sendDataUdp:", host, port);
@@ -1099,21 +1107,21 @@ char EspDrv::read(uint32_t timeout)
 	uint8_t buf[4];
 
 
-	if(HAL_UART_Receive(m_espUART, buf, 1, _timeout) == HAL_OK)
+	if(HAL_UART_Receive(m_espUART, buf, 1, timeout) == HAL_OK)
 		return buf[0];
 
 	return -1;
 }
 
-int EspDrv::print(uint8_t *str, uint32_t timeout)
+int EspDrv::print(const char* str, uint32_t timeout)
 {
-	HAL_UART_Transmit(m_espUART, str, strlen(str), timeout);
+	HAL_UART_Transmit(m_espUART, (uint8_t*)str, strlen(str), timeout);
 	return strlen(str);
 }
 
-int EspDrv::println(uint8_t *str, uint32_t timeout)
+int EspDrv::println(const char *str, uint32_t timeout)
 {
-	HAL_UART_Transmit(espUART, str, strlen(str), timeout);
+	HAL_UART_Transmit(m_espUART, (uint8_t*)str, strlen(str), timeout);
 	char newline[3] = "\r\n";
 	HAL_UART_Transmit(espUART, (uint8_t *) newline, 2, timeout);
 

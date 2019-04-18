@@ -124,7 +124,7 @@ int main(void)
 	DWT_Delay_Init();
 
 	// initialize Wifi
-	WiFiEsp.init(&husart2);
+	WiFiEsp.init(&huart2);
 
 	/* USER CODE END 2 */
 

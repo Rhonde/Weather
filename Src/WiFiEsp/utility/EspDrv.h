@@ -332,7 +332,7 @@ private:
 	int print(const char *str, uint32_t timeout = 1000);
 	int println(const char *str, uint32_t timeout = 1000);
 	bool available(void);
-	char read(int timeout);
+	char read(uint32_t timeout);
 
 
 	friend class WiFiEsp;

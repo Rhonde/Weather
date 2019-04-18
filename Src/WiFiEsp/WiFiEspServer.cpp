@@ -69,16 +69,16 @@ WiFiEspClient WiFiEspServer::available(uint8_t* status)
 	{
 		LOGINFO1D("New client", espDrv->m_connId);
 		m_wifi->allocateSocket(espDrv->m_connId);
-		WiFiEspClient client(espDrv->m_connId);
+		WiFiEspClient client(m_wifi, espDrv->m_connId);
 		return client;
 	}
 
-    return WiFiEspClient(255);
+    return WiFiEspClient(m_wifi, 255);
 }
 
 uint8_t WiFiEspServer::status()
 {
-    return EspDrv::getServerState(0);
+    return m_wifi->GetDrv()->getServerState(0);
 }
 
 size_t WiFiEspServer::write(uint8_t b)
@@ -94,7 +94,7 @@ size_t WiFiEspServer::write(const uint8_t *buffer, size_t size)
     {
         if (m_wifi->m_state[sock] != 0)
         {
-        	WiFiEspClient client(sock);
+        	WiFiEspClient client(m_wifi, sock);
             n += client.write(buffer, size);
         }
     }

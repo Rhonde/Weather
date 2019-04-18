@@ -24,20 +24,21 @@ along with The Arduino WiFiEsp library.  If not, see
 #include "Print.h"
 #include "Client.h"
 #include "IPAddress.h"
+#include "WiFiEsp.h"
 
-
+class WiFiEspClass;
 
 class WiFiEspClient : public Client
 {
 public:
-  WiFiEspClient();
-  WiFiEspClient(uint8_t sock);
+  WiFiEspClient(WiFiEspClass* wifi);
+  WiFiEspClient(WiFiEspClass* wifi, uint8_t sock);
   
   
   // override Print.print method
   
-  size_t print(const __FlashStringHelper *ifsh);
-  size_t println(const __FlashStringHelper *ifsh);
+  size_t print(const char *str);
+  size_t println(const char *str);
 
 
   /*
@@ -133,7 +134,8 @@ public:
 
 private:
 
-  uint8_t _sock;     // connection id
+  uint8_t m_sock;     // connection id
+  WiFiEspClass* m_wifi;
 
   int connect(const char* host, uint16_t port, uint8_t protMode);
   

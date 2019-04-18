@@ -25,16 +25,16 @@ along with The Arduino WiFiEsp library.  If not, see
 
 class WiFiEspUDP : public UDP {
 private:
-  uint8_t _sock;  // socket ID for Wiz5100
-  uint16_t _port; // local port to listen on
+  uint8_t m_sock;  // socket ID for Wiz5100
+  uint16_t m_port; // local port to listen on
   
   
-  uint16_t _remotePort;
-  char _remoteHost[30];
+  uint16_t m_remotePort;
+  char m_remoteHost[30];
   
 
 public:
-  WiFiEspUDP();  // Constructor
+  WiFiEspUDP(WiFiEspClass *wifi);  // Constructor
 
   virtual uint8_t begin(uint16_t);	// initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
   virtual void stop();  // Finish with the UDP socket
@@ -92,6 +92,11 @@ public:
 
 
   friend class WiFiEspServer;
+
+private:
+  WiFiEspClass* m_wifi;
+  EspDrv *m_espDrv;
+
 };
 
 #endif

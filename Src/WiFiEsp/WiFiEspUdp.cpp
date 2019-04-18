@@ -23,24 +23,29 @@ along with The Arduino WiFiEsp library.  If not, see
 #include "utility/debug.h"
 
 /* Constructor */
-WiFiEspUDP::WiFiEspUDP() : _sock(NO_SOCKET_AVAIL) {}
+WiFiEspUDP::WiFiEspUDP(WiFiEspClass *wifi)
+{
+	m_sock = NO_SOCKET_AVAIL;
+	m_wifi = wifi;
+	m_espDrv = wifi->GetDrv();
+}
 
 
 
 
 /* Start WiFiUDP socket, listening at local port PORT */
 
-uint8_t WiFiEspUDP::begin(WiFiEspClass &wifi, uint16_t port)
+uint8_t WiFiEspUDP::begin(uint16_t port)
 {
-    uint8_t sock = wifi.getFreeSocket();
+    uint8_t sock = m_wifi->getFreeSocket();
     if (sock != NO_SOCKET_AVAIL)
     {
         m_espDrv->startClient("0", port, sock, UDP_MODE);
 		
-        allocateSocket(sock);  // allocating the socket for the listener
-        m_server_port[sock] = port;
-        _sock = sock;
-        _port = port;
+        m_wifi->allocateSocket(sock);  // allocating the socket for the listener
+        m_wifi->m_server_port[sock] = port;
+        m_sock = sock;
+        m_port = port;
         return 1;
     }
     return 0;
@@ -52,7 +57,7 @@ uint8_t WiFiEspUDP::begin(WiFiEspClass &wifi, uint16_t port)
    will return zero if parsePacket hasn't been called yet */
 int WiFiEspUDP::available()
 {
-	 if (_sock != NO_SOCKET_AVAIL)
+	 if (m_sock != NO_SOCKET_AVAIL)
 	 {
 		int bytes = EspDrv::availData(_sock);
 		if (bytes>0)
@@ -67,30 +72,30 @@ int WiFiEspUDP::available()
 /* Release any resources being used by this WiFiUDP instance */
 void WiFiEspUDP::stop()
 {
-	  if (_sock == NO_SOCKET_AVAIL)
+	  if (m_sock == NO_SOCKET_AVAIL)
 	    return;
 
       // Discard data that might be in the incoming buffer
       flush();
       
       // Stop the listener and return the socket to the pool
-	  EspDrv::stopClient(_sock);
-      m_state[_sock] = NA_STATE;
-      m_server_port[_sock] = 0;
+	  m_wifi->GetDrv()->stopClient(_sock);
+      m_wifi->m_state[_sock] = NA_STATE;
+      m_wifi->m_server_port[_sock] = 0;
 
 	  _sock = NO_SOCKET_AVAIL;
 }
 
 int WiFiEspUDP::beginPacket(const char *host, uint16_t port)
 {
-  if (_sock == NO_SOCKET_AVAIL)
-	  _sock = getFreeSocket();
-  if (_sock != NO_SOCKET_AVAIL)
+  if (m_sock == NO_SOCKET_AVAIL)
+	  m_sock = getFreeSocket();
+  if (m_sock != NO_SOCKET_AVAIL)
   {
 	  //EspDrv::startClient(host, port, _sock, UDP_MODE);
-	  _remotePort = port;
-	  strcpy(_remoteHost, host);
-	  allocateSocket(_sock);
+	  m_remotePort = port;
+	  strcpy(m_remoteHost, host);
+	  m_wifi->allocateSocket(m_sock);
 	  return 1;
   }
   return 0;
