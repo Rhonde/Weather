@@ -1,0 +1,31 @@
+<library>
+  <repositories>
+    <!-- path to modm repository -->
+    <repository>
+      <path>../modm-io/modm/repo.lb</path>
+    </repository>
+  </repositories>
+  <!-- extend this board configuration -->
+  <extends>modm:nucleo-l476rg</extends>
+  <options>
+    <!-- give this project a custom name -->
+    <option name="modm:build:project.name">modm-weather</option>
+  </options>
+  <modules>
+    <!-- include the SCons build module -->
+    <module>modm:build:scons</module>
+    <module>modm:architecture</module>
+    <module>modm:board</module>
+    <module>modm:cmsis</module>
+    <module>modm:debug</module>
+    <module>modm:docs</module>
+    <module>modm:driver</module>
+    <module>modm:io</module>
+    <module>modm:math</module>
+    <module>modm:platform</module>
+    <module>modm:processing</module>
+    <module>modm:ui</module>
+    <module>modm:unittest</module>
+    <module>modm:utils</module>
+  </modules>
+</library>

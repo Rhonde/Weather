@@ -1,0 +1,7 @@
+/**
+
+@defgroup modm_unittest Unit Tests
+
+Lightweight library for on-device unit testing.
+
+ */
