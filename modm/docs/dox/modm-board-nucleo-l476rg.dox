@@ -1,9 +1,0 @@
-/**
-
-@ingroup modm_board
-@defgroup modm_board_nucleo_l476rg NUCLEO-L476RG
-
-Nucleo kit for STM32L476RG
-http://www.st.com/en/evaluation-tools/nucleo-l476rg.html
-
- */

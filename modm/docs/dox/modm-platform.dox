@@ -1,7 +1,0 @@
-/**
-
-@defgroup modm_platform Platform HAL
-
-Target-specific implementation of the Hardware Abstraction Layer.
-
- */
