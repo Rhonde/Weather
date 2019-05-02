@@ -59,7 +59,7 @@ int WiFiEspUDP::available()
 {
 	 if (m_sock != NO_SOCKET_AVAIL)
 	 {
-		int bytes = EspDrv::availData(_sock);
+		int bytes = m_wifi->GetDrv()->availData(m_sock);
 		if (bytes>0)
 		{
 			return bytes;
@@ -79,9 +79,9 @@ void WiFiEspUDP::stop()
       flush();
       
       // Stop the listener and return the socket to the pool
-	  m_wifi->GetDrv()->stopClient(_sock);
-      m_wifi->m_state[_sock] = NA_STATE;
-      m_wifi->m_server_port[_sock] = 0;
+	  m_wifi->GetDrv()->stopClient(m_sock);
+      m_wifi->m_state[m_sock] = NA_STATE;
+      m_wifi->m_server_port[m_sock] = 0;
 
 	  _sock = NO_SOCKET_AVAIL;
 }
@@ -89,7 +89,7 @@ void WiFiEspUDP::stop()
 int WiFiEspUDP::beginPacket(const char *host, uint16_t port)
 {
   if (m_sock == NO_SOCKET_AVAIL)
-	  m_sock = getFreeSocket();
+	  m_sock = m_wifi->getFreeSocket();
   if (m_sock != NO_SOCKET_AVAIL)
   {
 	  //EspDrv::startClient(host, port, _sock, UDP_MODE);
@@ -123,7 +123,7 @@ size_t WiFiEspUDP::write(uint8_t byte)
 
 size_t WiFiEspUDP::write(const uint8_t *buffer, size_t size)
 {
-	bool r = EspDrv::sendDataUdp(_sock, _remoteHost, _remotePort, buffer, size);
+	bool r = m_wifi->GetDrv()->sendDataUdp(_sock, _remoteHost, _remotePort, buffer, size);
 	if (!r)
 	{
 		return 0;
@@ -146,7 +146,7 @@ int WiFiEspUDP::read()
 	bool connClose = false;
 	
     // Read the data and handle the timeout condition
-	if (! EspDrv::getData(_sock, &b, false, &connClose))
+	if (! m_wifi->GetDrv()->getData(_sock, &b, false, &connClose))
       return -1;  // Timeout occured
 
 	return b;
@@ -156,7 +156,7 @@ int WiFiEspUDP::read(uint8_t* buf, size_t size)
 {
 	if (!available())
 		return -1;
-	return EspDrv::getDataBuf(_sock, buf, size);
+	return m_wifi->GetDrv()->getDataBuf(_sock, buf, size);
 }
 
 int WiFiEspUDP::peek()
@@ -180,13 +180,13 @@ void WiFiEspUDP::flush()
 IPAddress  WiFiEspUDP::remoteIP()
 {
 	IPAddress ret;
-	EspDrv::getRemoteIpAddress(ret);
+	m_wifi->GetDrv()->getRemoteIpAddress(ret);
 	return ret;
 }
 
 uint16_t  WiFiEspUDP::remotePort()
 {
-	return EspDrv::getRemotePort();
+	return m_wifi->GetDrv()->getRemotePort();
 }
 
 

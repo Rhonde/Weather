@@ -809,7 +809,7 @@ bool EspDrv::sendData(uint8_t sock, const uint8_t *data, uint16_t len)
 		return false;
 	}
 
-	HAL_UART_Transmit(m_espUART, data, len, 1000);
+	HAL_UART_Transmit(m_espUART, (char*)data, len, 1000);
 
 	idx = readUntil(2000);
 	if (idx != TAG_SENDOK)
