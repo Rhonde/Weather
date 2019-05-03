@@ -178,6 +178,9 @@
 							<tool id="com.atollic.truestudio.exe.debug.toolchain.secoutput.486222707" name="Other" superClass="com.atollic.truestudio.exe.debug.toolchain.secoutput.839033486"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.atollic.truestudio.exe.debug.1518366166.1553753544" name="uart.c" rcbsApplicability="disable" resourcePath="Src/WiFiEsp/utility/uart.c" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.2099448777">
+						<tool id="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.2099448777" name="C Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447"/>
+					</fileInfo>
 					<fileInfo id="com.atollic.truestudio.exe.debug.311825581.983937533" name="" rcbsApplicability="disable" resourcePath="nofile" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1976695455">
 						<tool id="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1976695455" name="C Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447">
 							<inputType id="com.atollic.truestudio.gcc.input.1274347818" superClass="com.atollic.truestudio.gcc.input"/>
