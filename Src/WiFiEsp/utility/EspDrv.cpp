@@ -1041,7 +1041,7 @@ int EspDrv::readUntil(unsigned int timeout, const char* tag, bool findTags)
 	{
 		//if (espSerial->available())
 		{
-			c = (char) espSerial->read();
+			c = (char) m_espSerial->read();
 			LOGDEBUG0C(c);
 			m_ringBuf->push(c);
 
@@ -1123,7 +1123,7 @@ int EspDrv::println(const char *str, uint32_t timeout)
 {
 	HAL_UART_Transmit(m_espUART, (uint8_t*)str, strlen(str), timeout);
 	char newline[3] = "\r\n";
-	HAL_UART_Transmit(espUART, (uint8_t *) newline, 2, timeout);
+	HAL_UART_Transmit(m_espUART, (uint8_t *) newline, 2, timeout);
 
 	return strlen(str)+2;
 }

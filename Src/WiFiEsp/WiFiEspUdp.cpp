@@ -83,7 +83,7 @@ void WiFiEspUDP::stop()
       m_wifi->m_state[m_sock] = NA_STATE;
       m_wifi->m_server_port[m_sock] = 0;
 
-	  _sock = NO_SOCKET_AVAIL;
+	  m_sock = NO_SOCKET_AVAIL;
 }
 
 int WiFiEspUDP::beginPacket(const char *host, uint16_t port)
@@ -92,7 +92,7 @@ int WiFiEspUDP::beginPacket(const char *host, uint16_t port)
 	  m_sock = m_wifi->getFreeSocket();
   if (m_sock != NO_SOCKET_AVAIL)
   {
-	  //EspDrv::startClient(host, port, _sock, UDP_MODE);
+	  //EspDrv::startClient(host, port, m_sock, UDP_MODE);
 	  m_remotePort = port;
 	  strcpy(m_remoteHost, host);
 	  m_wifi->allocateSocket(m_sock);
@@ -113,7 +113,7 @@ int WiFiEspUDP::beginPacket(IPAddress ip, uint16_t port)
 
 int WiFiEspUDP::endPacket()
 {
-	return 1; //ServerDrv::sendUdpData(_sock);
+	return 1; //ServerDrv::sendUdpData(m_sock);
 }
 
 size_t WiFiEspUDP::write(uint8_t byte)
@@ -123,7 +123,7 @@ size_t WiFiEspUDP::write(uint8_t byte)
 
 size_t WiFiEspUDP::write(const uint8_t *buffer, size_t size)
 {
-	bool r = m_wifi->GetDrv()->sendDataUdp(_sock, _remoteHost, _remotePort, buffer, size);
+	bool r = m_wifi->GetDrv()->sendDataUdp(m_sock, m_remoteHost, m_remotePort, buffer, size);
 	if (!r)
 	{
 		return 0;
@@ -146,7 +146,7 @@ int WiFiEspUDP::read()
 	bool connClose = false;
 	
     // Read the data and handle the timeout condition
-	if (! m_wifi->GetDrv()->getData(_sock, &b, false, &connClose))
+	if (! m_wifi->GetDrv()->getData(m_sock, &b, false, &connClose))
       return -1;  // Timeout occured
 
 	return b;
@@ -156,7 +156,7 @@ int WiFiEspUDP::read(uint8_t* buf, size_t size)
 {
 	if (!available())
 		return -1;
-	return m_wifi->GetDrv()->getDataBuf(_sock, buf, size);
+	return m_wifi->GetDrv()->getDataBuf(m_sock, buf, size);
 }
 
 int WiFiEspUDP::peek()
