@@ -14,15 +14,22 @@
 // Constructor to initialize Queue
 Queue::Queue(int size)
 {
-	m_arr = new byte[size];
+	m_arr = new uint8_t[size];
 	m_capacity = size;
 	m_front = 0;
 	m_rear = -1;
-	m+count = 0;
+	m_count = 0;
 }
 
+void Queue::Init()
+{
+	m_front = 0;
+	m_rear = -1;
+	m_count = 0;
+	m_error = 0;
+}
 // Utility function to remove front element from the Queue
-bool Queue::Pop(byte *value)
+bool Queue::Pop(uint8_t *value)
 {
 
 	// check for Queue underflow
@@ -37,7 +44,7 @@ bool Queue::Pop(byte *value)
 }
 
 // Utility function to add an item to the Queue
-bool Queue::Push(byte item)
+bool Queue::Push(uint8_t item)
 {
 	// check for Queue overflow
 	if (IsFull())
@@ -51,7 +58,7 @@ bool Queue::Push(byte item)
 }
 
 // Utility function to return front element in the Queue
-bool Queue::Peek(byte *value)
+bool Queue::Peek(uint8_t *value)
 {
 	if (isEmpty())
 		return false;

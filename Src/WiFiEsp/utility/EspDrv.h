@@ -275,7 +275,7 @@ public:
     bool getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose);
     int getDataBuf(uint8_t connId, uint8_t *buf, uint16_t bufSize);
     bool sendData(uint8_t sock, const uint8_t *data, uint16_t len);
-    bool sendData(uint8_t sock, const __FlashStringHelper *data, uint16_t len, bool appendCrLf=false);
+    bool sendData(uint8_t sock, const char *data, uint16_t len, bool appendCrLf=false);
 	bool sendDataUdp(uint8_t sock, const char* host, uint16_t port, const uint8_t *data, uint16_t len);
     uint16_t availData(uint8_t connId);
 

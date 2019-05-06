@@ -178,9 +178,10 @@
 							<tool id="com.atollic.truestudio.exe.debug.toolchain.secoutput.486222707" name="Other" superClass="com.atollic.truestudio.exe.debug.toolchain.secoutput.839033486"/>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="com.atollic.truestudio.exe.debug.1518366166.1553753544" name="uart.c" rcbsApplicability="disable" resourcePath="Src/WiFiEsp/utility/uart.c" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.2099448777">
-						<tool id="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.2099448777" name="C Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447"/>
+					<fileInfo id="com.atollic.truestudio.exe.debug.1518366166.585240357" name="RingBuffer.cpp" rcbsApplicability="disable" resourcePath="Src/WiFiEsp/utility/RingBuffer.cpp" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gpp.981298185.414103670">
+						<tool id="com.atollic.truestudio.exe.debug.toolchain.gpp.981298185.414103670" name="C++ Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gpp.981298185"/>
 					</fileInfo>
+					<fileInfo id="com.atollic.truestudio.exe.debug.1518366166.745547731" name="RingBuffer.h" rcbsApplicability="disable" resourcePath="Src/WiFiEsp/utility/RingBuffer.h" toolsToInvoke=""/>
 					<fileInfo id="com.atollic.truestudio.exe.debug.311825581.983937533" name="" rcbsApplicability="disable" resourcePath="nofile" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1976695455">
 						<tool id="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447.1976695455" name="C Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gcc.1836874447">
 							<inputType id="com.atollic.truestudio.gcc.input.1274347818" superClass="com.atollic.truestudio.gcc.input"/>
@@ -189,7 +190,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry excluding="SFE_BMP180.ho|NS_energyShield2.ho|NS_eS2_Utilities.ho|SFE_BMP180.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
-						<entry excluding="DHT11|ESP8266WiFi/esp8266/Inc/flash_utils.h|ESP8266WiFi/esp8266/abi.cpp|ESP8266WiFi/esp8266/base64.cpp|NS_energyShield2.c|main.c|ESP8266WiFi/esp8266/Src|NS_eS2_Utilities.c|SFE_BMP180.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
+						<entry excluding="WiFiEsp/utility/RingBuffer.cpp|WiFiEsp/utility/RingBuffer.h|WiFiEsp/utility/usart2.c|DHT11|ESP8266WiFi/esp8266/Inc/flash_utils.h|ESP8266WiFi/esp8266/abi.cpp|ESP8266WiFi/esp8266/base64.cpp|NS_energyShield2.c|main.c|ESP8266WiFi/esp8266/Src|NS_eS2_Utilities.c|SFE_BMP180.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
 					</sourceEntries>
 				</configuration>

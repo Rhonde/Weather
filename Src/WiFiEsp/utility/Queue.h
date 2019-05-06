@@ -12,25 +12,39 @@
 #include <stdio.h>
 #include <stm32l4xx_hal.h>
 
+enum enumErrFlag {
+		errParity 	= (1<<0),
+		errFrame 	= (1<<1),
+		errNoise	= (1<<2),
+		errOverrun	= (1<<3)
+};
+
+#define SIZE 64
+
 class Queue
 {
 
 	public:
 		Queue(int size = SIZE);		// constructor
 		virtual ~Queue();
-		bool 	Pop(byte *val);				// gets a byte from the queue
-		bool 	Push(byte val);		// adds a byte to the queue
-		byte 	Peek(byte *val);
+		bool 	Pop(uint8_t *val);				// gets a uint8_t from the queue
+		bool 	Push(uint8_t val);		// adds a uint8_t to the queue
+		bool 	Peek(uint8_t *val);
 		int 	Size();
 		bool 	IsEmpty();
 		bool 	IsFull();
+		void 	Init();
+
+		void	SetError(enumErrFlag error) {m_error = error;};
+		enumErrFlag	GetError(void) { return m_error; };
 
 	private:
-		byte 	*m_arr;   		// array to store queue elements
+		uint8_t 	*m_arr;   		// array to store queue elements
 		int 	m_capacity;   	// maximum capacity of the queue
 		int		m_front;  		// front points to front element in the queue (if any)
 		int 	m_rear;   		// rear points to last element in the queue
 		int 	m_count;  		// current size of the queue
+		uint8_t	m_error;
 };
 
 #endif /* WIFIESP_UTILITY_QUEUE_H_ */
