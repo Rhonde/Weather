@@ -269,7 +269,7 @@ IPAddress WiFiEspClient::remoteIP()
 // Private Methods
 ////////////////////////////////////////////////////////////////////////////////
 
-size_t WiFiEspClient::printFSH(const char *ifsh, bool appendCrLf)
+size_t WiFiEspClient::print(const char *ifsh, bool appendCrLf)
 {
 	size_t size = strlen_P((char*) ifsh);
 

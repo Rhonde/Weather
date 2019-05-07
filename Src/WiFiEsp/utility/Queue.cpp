@@ -8,9 +8,6 @@
 #include "Queue.h"
 
 
-// define default capacity of the Queue
-#define SIZE 16
-
 // Constructor to initialize Queue
 Queue::Queue(int size)
 {
@@ -26,21 +23,22 @@ void Queue::Init()
 	m_front = 0;
 	m_rear = -1;
 	m_count = 0;
-	m_error = 0;
+	m_error = errNone;
 }
 // Utility function to remove front element from the Queue
-bool Queue::Pop(uint8_t *value)
+uint8_t Queue::Pop()
 {
+	uint8_t value;
 
 	// check for Queue underflow
 	if (IsEmpty())
-		return false;
+		return 0;
 
 	// post decrement
-	*value = m_arr[front];
+	value = m_arr[m_front];
 	m_front = (m_front + 1) % m_capacity;
 	m_count--;
-	return true;
+	return value;
 }
 
 // Utility function to add an item to the Queue
@@ -52,7 +50,7 @@ bool Queue::Push(uint8_t item)
 
 	// pre increment
 	m_rear = (m_rear + 1) % m_capacity;
-	m_arr[rear] = item;
+	m_arr[m_rear] = item;
 	m_count++;
 	return true;
 }
@@ -60,7 +58,7 @@ bool Queue::Push(uint8_t item)
 // Utility function to return front element in the Queue
 bool Queue::Peek(uint8_t *value)
 {
-	if (isEmpty())
+	if (IsEmpty())
 		return false;
 
 	*value = m_arr[m_front];
@@ -89,6 +87,6 @@ bool Queue::IsFull()
 
 Queue::~Queue()
 {
-	free m_arr;
+	delete m_arr;
 }
 

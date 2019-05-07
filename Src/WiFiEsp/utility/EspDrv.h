@@ -27,8 +27,9 @@ along with The Arduino WiFiEsp library.  If not, see
 #include "IPAddress.h"
 
 
+#include "queue.h"
+#include "serial.h"
 #include "RingBuffer.h"
-
 
 
 // Maximum size of a SSID
@@ -290,7 +291,7 @@ public:
 
 private:
 	UART_HandleTypeDef *m_espUART;
-
+	Serial *m_pSerial;
 	long m_bufPos;
 	uint8_t m_connId;
 
@@ -312,11 +313,9 @@ private:
 	uint8_t m_bssid[WL_MAC_ADDR_LENGTH];
 	uint8_t m_mac[WL_MAC_ADDR_LENGTH];
 	uint8_t m_localIp[WL_IPV4_LENGTH];
+	RingBuffer *m_pRingBuf;
 
-
-	// the ring buffer is used to search the tags in the stream
-	RingBuffer* m_ringBuf;
-
+	// ring buffers are in serial class
 
 	//static int sendCmd(const char* cmd, int timeout=1000);
 	int sendCmd(const char* cmd, int timeout=1000);

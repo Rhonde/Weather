@@ -139,7 +139,7 @@ private:
 
   int connect(const char* host, uint16_t port, uint8_t protMode);
   
-  size_t printFSH(const __FlashStringHelper *ifsh, bool appendCrLf);
+  size_t print(const char *ifsh, bool appendCrLf);
 
 };
 

@@ -29,7 +29,7 @@ public:
 	void reset();
 	void init();
 	void push(char c);
-	int getPos();
+	int  getPos();
 	bool endsWith(const char* str);
 	void getStr(char * destination, unsigned int skipChars);
 	void getStrN(char * destination, unsigned int skipChars, int num);

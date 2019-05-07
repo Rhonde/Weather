@@ -7,14 +7,17 @@
 
 #include <utility/Serial.h>
 
+Queue *TxBuf = new Queue(256);
+Queue *RxBuf = new Queue(256);
+
 Serial::Serial(UART_HandleTypeDef &uart, int txSize, int rxSize)
 {
 	m_uart = uart;
-	m_txBuf = new Queue(txSize);
-	m_rxBuf = new Queue(rxSize);
 
 	// init HAL Uart -- done by STM32Cube code
 	HAL_UART_MspInit(&uart);
+	TxBuf->Init();
+	RxBuf->Init();
 }
 
 Serial::~Serial()
@@ -25,57 +28,55 @@ Serial::~Serial()
 void USART2_IRQHandler(void)
 {
 	volatile unsigned int ISR;
-	byte data;
+	uint8_t data;
 
 
 	ISR = USART2->ISR;								// read interrupt and status register
 	if (ISR & USART_ISR_RXNE)
 	{                  // read interrupt
-		data = (byte)(USART2->RDR & 0xff);				// read the register clears the interrupt
-		byte error = (byte)(ISR & 0x0F);				// bottom 4 bit have receive error bits
+		data = (uint8_t)(USART2->RDR & 0xff);				// read the register clears the interrupt
+		enumErrFlag error = (enumErrFlag)(ISR & 0x0F);				// bottom 4 bit have receive error bits
 
-		if (!Serial::RxBuf.IsFull())
+		if (!RxBuf->IsFull())
 		{
-			Serial::RxBuf.Push(data);
+			RxBuf->Push(data);
 			if(error != 0)
-				Serial::RxBuf.SetError(error);
+				RxBuf->SetError(error);
 		}
 		else
-			Serial::RxBuf.SetError(errOverrun);
+			RxBuf->SetError(errOverrun);
 
 	}
 	if (ISR & USART_ISR_TXE)
 	{
-		if (!Serial::TxBuf.IsEmptr())
+		if (!TxBuf->IsEmpty())
 		{
-			data = Serial::TxBuf.Pop();
+			data = TxBuf->Pop();
 			USART2->TDR = (data & 0xFF);
-			tx_restart = 0;
 		}
 		else
 		{
-			tx_restart = 1;
-			USART2->CR1 &= ~USART_FLAG_TXEIE;	// disable TX interrupt if nothing to send
+			USART2->CR1 &= ~USART_CR1_TXEIE;	// disable TX interrupt if nothing to send
 
 		}
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Read(byte *ptr, int  count, int waitMs);
+// Read(uint8_t *ptr, int  count, int waitMs);
 //
-// read from the ring buffer the requested number of bytes
+// read from the ring buffer the requested number of uint8_ts
 //
 //		ptr		pointer to the data
-//		count	the number of bytes to read
+//		count	the number of uint8_ts to read
 // 		waitMs 	specifies the time to wait
 //			0		no wait, return immediately after it reads what it can
 //			-1		wait forever till count is satisfied
 //			x		wait x milli-seconds, or till buffer is full
 //
-//	returns the number of bytes read or -1 if an error is encountered (parity, over-run, etc...)
+//	returns the number of uint8_ts read or -1 if an error is encountered (parity, over-run, etc...)
 //
-int Serial::Read(byte *ptr, int  count, int waitMs = -1)
+int Serial::Read(uint8_t *ptr, int  count, int waitMs)
 {
 	int cnt = 0;
 	unsigned int startTick = HAL_GetTick();
@@ -92,7 +93,7 @@ int Serial::Read(byte *ptr, int  count, int waitMs = -1)
 		if((cnt < count) && (waitMs > 0))
 		{
 			unsigned int curTick = HAL_GetTick();
-			if((curTick - startTick) > waitMs)
+			if((int)(curTick - startTick) > waitMs)
 				break;
 		}
 	}
@@ -100,46 +101,56 @@ int Serial::Read(byte *ptr, int  count, int waitMs = -1)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Write(byte *ptr, int  count, int waitMs);
+// Write(uint8_t *ptr, int  count, int waitMs);
 //
-// writes to the ring buffer the requested number of bytes,
-// if the UART is not busy, it take a 1 to 8 bytes from the front
+// writes to the ring buffer the requested number of uint8_ts,
+// if the UART is not busy, it take a 1 to 8 uint8_ts from the front
 // and call the HAL write interrupt
 //
 //		ptr		pointer to the data
-//		count	the number of bytes to write
+//		count	the number of uint8_ts to write
 // 		waitMs specifies the time to wait
-//			0		no wait, return immediately after it reads what it can
+//			0		no wait, return immediately after it writes what it can
 //			-1		wait forever till count is satisfied
 //			x		wait x milli-seconds, or till buffer is full
 //
-//	returns the number of bytes written
+//	returns the number of uint8_ts written
 //	-1 if an error is encountered (timeout)
 //
-bool Serial::Write(byte *ptr, int count, int waitMs = -1)
+int Serial::Write(uint8_t *ptr, int count, int waitMs)
 {
 	int cnt = 0;
 	unsigned int startTick = HAL_GetTick();
 
 	for(cnt = 0; cnt < count; )
 	{
-		if(!Serial::TxBuf.IsFull())
-			Serial::TxBuf.Push(*(ptr + cnt));
+		if(!TxBuf->IsFull())
+			TxBuf->Push(*(ptr + cnt++));
+		else if (waitMs == 0)
+			break;
+		else if(waitMs < 0)
+			continue;
+		else if((int)(startTick - HAL_GetTick()) > waitMs)
+			break;
 	}
-	USART2->TDR = Serial::TxBuf.Pop();	// send the data
-	USART2->CR1 |= USART_FLAG_TXEIE;	// enable TX interrupt if data to send
+	if(TxBuf->Size() > 0)
+	{
+		USART2->TDR = TxBuf->Pop();	// send the data
+		USART2->CR1 |= USART_CR1_TXEIE;	// enable TX interrupt if data to send
+	}
+	return cnt;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 //	bool Available();
 //
-//	returns true if data is available in the ring buffer
-//	returns false for no data
+//	returns number of uint8_t in RX queue
+//	returns 0 for no data
 //
-bool Serial::Available()
+int  Serial::Available()
 {
-	return !Serial::RxBuf.IsEmpty();
+	return RxBuf->Size();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -160,10 +171,10 @@ bool Serial::Available()
 //			x		wait x milli-seconds, or till buffer is full
 //	returns the converted integer.
 //
-unsigned int Serial::ParseInt(uint8 radix = 10, int waitMs = -1)
+unsigned int Serial::ParseInt(uint8_t radix, int waitMs)
 {
 	char buf[80];
-	byte data;
+	uint8_t data;
 	unsigned int value = 0;
 	int cnt = 0;
 	unsigned int startTick = HAL_GetTick();
@@ -171,8 +182,8 @@ unsigned int Serial::ParseInt(uint8 radix = 10, int waitMs = -1)
 	// get the character string
 	while(cnt < sizeof(buf))
 	{
-		if(!Serial::RxBuf.IsEmpty())
-			data = Serial::RxBuf.Pop();
+		if(!RxBuf->IsEmpty())
+			data = RxBuf->Pop();
 		if(radix == 16)
 		{
 			if(isxdigit(data) || (data == 'X') || (data == 'x') || (data == 'h'))
@@ -241,7 +252,7 @@ unsigned int Serial::ParseInt(uint8 radix = 10, int waitMs = -1)
 //
 void Serial::Flush()
 {
-	Serial::TxBuf.Init();
-	Serial::RxBuf.Init();
+	TxBuf->Init();
+	RxBuf->Init();
 }
 
