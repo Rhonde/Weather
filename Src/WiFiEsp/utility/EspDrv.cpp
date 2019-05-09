@@ -72,7 +72,7 @@ EspDrv::EspDrv()
 	for (uint ix = 0; ix < sizeof(m_remoteIp); ix++)
 		m_remoteIp[ix] = 0;
 
-	m_ringBuf = new RingBuffer(32);
+	m_pRingBuf = new RingBuffer(32);
 
 }
 void EspDrv::wifiDriverInit(UART_HandleTypeDef *_espUART)
@@ -80,7 +80,7 @@ void EspDrv::wifiDriverInit(UART_HandleTypeDef *_espUART)
 	LOGDEBUG("> wifiDriverInit");
 
 	m_espUART = _espUART;
-	m_pSerial(m_espUART, 256, 256);
+	m_pSerial = new Serial(m_espUART, 256, 256);
 
 	bool initOK = false;
 
@@ -485,7 +485,7 @@ uint8_t EspDrv::getScanNetworks()
 		if (idx == NUMESPTAGS)
 		{
 			memset(m_networkSsid[ssidListNum], 0, WL_SSID_MAX_LENGTH);
-			m_ringBuf->getStrN(m_networkSsid[ssidListNum], 1,
+			m_pRingBuf->getStrN(m_networkSsid[ssidListNum], 1,
 					WL_SSID_MAX_LENGTH - 1);
 		}
 
@@ -648,8 +648,7 @@ uint8_t EspDrv::getServerState(uint8_t sock)
 
 uint16_t EspDrv::availData(uint8_t connId)
 {
-	uint8_t buf[80];
-	char c;
+	uint8_t c;
 
 	// if there is data in the buffer
 	if (m_pSerial->Available() != 0)
@@ -714,7 +713,7 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 			}
 			else
 			{
-				*data = (char) espSerial->GetChar();
+				*data = (char) m_pSerial->GetChar();
 			}
 			//Serial.print((char)*data);
 
@@ -736,11 +735,10 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 						int idx = readUntil(500, ",CLOSED\r\n", false);
 						if (idx != NUMESPTAGS)
 						{
-							LOGERROR(F("Tag CLOSED not found"));
+							LOGERROR("Tag CLOSED not found");
 						}
 
-						LOGDEBUG();
-						LOGDEBUG(F("Connection closed"));
+						LOGDEBUG("Connection closed");
 
 						*connClose = true;
 					}
@@ -752,7 +750,7 @@ bool EspDrv::getData(uint8_t connId, uint8_t *data, bool peek, bool* connClose)
 	} while ((HAL_GetTick() - startTick) < 2000);
 
 	// timed out, reset the buffer
-	LOGERROR1(F("TIMEOUT:"), m_pSerial->Available());
+	LOGERROR1D("TIMEOUT:", m_pSerial->Available());
 
 	m_connId = 0;
 	*data = 0;
@@ -782,7 +780,7 @@ bool EspDrv::sendData(uint8_t sock, const uint8_t *data, uint16_t len)
 	LOGDEBUG2DD("> sendData:", sock, len);
 
 	sprintf(cmdBuf, "AT+CIPSEND=%d,%u\n", sock, len);
-	m_pSerial->Write(cmdBuf, sizeof(cmdBuf));
+	m_pSerial->Write((uint8_t*)cmdBuf, sizeof(cmdBuf));
 
 	// read chars until we see '>'
 
@@ -795,7 +793,7 @@ bool EspDrv::sendData(uint8_t sock, const uint8_t *data, uint16_t len)
 		return false;
 	}
 
-	m_pSerial->Write(data, len, 1000);
+	m_pSerial->Write((uint8_t*)data, len, 1000);
 
 	idx = readUntil(2000);
 	if (idx != TAG_SENDOK)
@@ -815,8 +813,8 @@ bool EspDrv::sendData(uint8_t sock, const char *data, uint16_t len,
 
 	LOGDEBUG2DD("> sendData:", sock, len);
 
-	sprintf(cmdBuf, "AT+CIPSEND=%d,%u\n", sock, len2);
-	m_pSerial->Write(cmdBuf, strlen(cmdBuf));
+	sprintf(cmdBuf, "AT+CIPSEND=%d,%u\n", sock, len);
+	m_pSerial->Write((uint8_t*)cmdBuf, strlen(cmdBuf));
 
 	int idx = readUntil(1000, (char *) ">", false);
 
@@ -826,12 +824,12 @@ bool EspDrv::sendData(uint8_t sock, const char *data, uint16_t len,
 		return false;
 	}
 
-	m_pSerial->Write(data, len, 1000);
+	m_pSerial->Write((uint8_t*)data, len, 1000);
 
 	if (appendCrLf)
 	{
 		sprintf(cmdBuf, "\r\n");
-		m_pSerial->Write(cmdBuf, strlen(cmdBuf));
+		m_pSerial->Write((uint8_t*)cmdBuf, strlen(cmdBuf));
 	}
 
 	idx = readUntil(2000);
@@ -852,7 +850,7 @@ bool EspDrv::sendDataUdp(uint8_t sock, const char* host, uint16_t port,
 
 	char cmdBuf[40];
 	sprintf(cmdBuf, "AT+CIPSEND=%d,%u,\"%s\",%u\n", sock, len, host, port);
-	m_pSerial->Write(cmdBuf, strlen(cmdBuf));
+	m_pSerial->Write((uint8_t*)cmdBuf, strlen(cmdBuf));
 
 	int idx = readUntil(1000, (char *) ">", false);
 	if (idx != NUMESPTAGS)
@@ -861,7 +859,7 @@ bool EspDrv::sendDataUdp(uint8_t sock, const char* host, uint16_t port,
 		return false;
 	}
 
-	m_Serial->Write(data, len);
+	m_pSerial->Write((uint8_t*)data, len);
 
 	idx = readUntil(2000);
 	if (idx != TAG_SENDOK)
@@ -914,7 +912,7 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag,
 	if (idx == NUMESPTAGS)
 	{
 		// clean the buffer to get a clean string
-		//m_ringBuf->init();
+		//m_pRingBuf->init();
 
 		// start tag found, search the endTag
 		idx = readUntil(500, endTag);
@@ -923,7 +921,7 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag,
 		{
 			// end tag found
 			// copy result to output buffer avoiding overflow
-			m_ringBuf->getStrN(outStr, strlen(endTag), outStrLen - 1);
+			m_pRingBuf->getStrN(outStr, strlen(endTag), outStrLen - 1);
 
 			// read the remaining part of the response
 			readUntil(2000);
@@ -958,13 +956,12 @@ bool EspDrv::sendCmdGet(const char* cmd, const char* startTag,
  */
 int EspDrv::sendCmd(const char* cmd, int timeout)
 {
-	HAL_StatusTypeDef status;
 	espEmptyBuf();
 
 	LOGDEBUG("----------------------------------------------");
 	LOGDEBUG1(">>", cmd);
 
-	int status = m_pSerial->Write((uint8_t*) cmd, strlen(cmd), timeout);
+	m_pSerial->Write((uint8_t*) cmd, strlen(cmd), timeout);
 
 	int idx = readUntil(timeout);
 
@@ -1025,7 +1022,7 @@ int EspDrv::readUntil(unsigned int timeout, const char* tag, bool findTags)
 
 			if (tag != NULL)
 			{
-				if (m_ringBuf->endsWith(tag))
+				if (m_pRingBuf->endsWith(tag))
 				{
 					ret = NUMESPTAGS;
 					//LOGDEBUG1("xxx");
@@ -1035,7 +1032,7 @@ int EspDrv::readUntil(unsigned int timeout, const char* tag, bool findTags)
 			{
 				for (int i = 0; i < NUMESPTAGS; i++)
 				{
-					if (m_ringBuf->endsWith(ESPTAGS[i]))
+					if (m_pRingBuf->endsWith(ESPTAGS[i]))
 					{
 						ret = i;
 						break;

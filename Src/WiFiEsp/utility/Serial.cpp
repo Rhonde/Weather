@@ -10,14 +10,59 @@
 Queue *TxBuf = new Queue(256);
 Queue *RxBuf = new Queue(256);
 
-Serial::Serial(UART_HandleTypeDef &uart, int txSize, int rxSize)
+////////////////////////////////////// INTERRUPT HANDLER /////////////////////////////////////
+
+extern "C"
+{
+	void Serial_IRQHandler(UART_HandleTypeDef *uart)
+	{
+		volatile unsigned int ISR;
+		uint8_t data;
+
+
+		ISR = uart->Instance->ISR;								// read interrupt and status register
+		if (ISR & USART_ISR_RXNE)
+		{                  // read interrupt
+			data = (uint8_t)(uart->Instance->RDR & 0xff);				// read the register clears the interrupt
+			enumErrFlag error = (enumErrFlag)(ISR & 0x0F);				// bottom 4 bit have receive error bits
+
+			if (!RxBuf->IsFull())
+			{
+				RxBuf->Push(data);
+				if(error != 0)
+					RxBuf->SetError(error);
+			}
+			else
+				RxBuf->SetError(errOverrun);
+
+		}
+		if (ISR & USART_ISR_TXE)
+		{
+			if (!TxBuf->IsEmpty())
+			{
+				data = TxBuf->Pop();
+				uart->Instance->TDR = (data & 0xFF);
+			}
+			else
+			{
+				uart->Instance->CR1 &= ~USART_CR1_TXEIE;	// disable TX interrupt if nothing to send
+
+			}
+		}
+	}
+}
+
+////////////////////////////////////// Serial Class ////////////////////////////////////////////
+
+Serial::Serial(UART_HandleTypeDef *uart, int txSize, int rxSize)
 {
 	m_uart = uart;
 
 	// init HAL Uart -- done by STM32Cube code
-	HAL_UART_MspInit(&uart);
 	TxBuf->Init();
 	RxBuf->Init();
+	uart->RxISR = Serial_IRQHandler;
+	uart->TxISR = Serial_IRQHandler;
 }
 
 Serial::~Serial()
@@ -25,42 +70,6 @@ Serial::~Serial()
 	// TODO Auto-generated destructor stub
 }
 
-void USART2_IRQHandler(void)
-{
-	volatile unsigned int ISR;
-	uint8_t data;
-
-
-	ISR = USART2->ISR;								// read interrupt and status register
-	if (ISR & USART_ISR_RXNE)
-	{                  // read interrupt
-		data = (uint8_t)(USART2->RDR & 0xff);				// read the register clears the interrupt
-		enumErrFlag error = (enumErrFlag)(ISR & 0x0F);				// bottom 4 bit have receive error bits
-
-		if (!RxBuf->IsFull())
-		{
-			RxBuf->Push(data);
-			if(error != 0)
-				RxBuf->SetError(error);
-		}
-		else
-			RxBuf->SetError(errOverrun);
-
-	}
-	if (ISR & USART_ISR_TXE)
-	{
-		if (!TxBuf->IsEmpty())
-		{
-			data = TxBuf->Pop();
-			USART2->TDR = (data & 0xFF);
-		}
-		else
-		{
-			USART2->CR1 &= ~USART_CR1_TXEIE;	// disable TX interrupt if nothing to send
-
-		}
-	}
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // Read(uint8_t *ptr, int  count, int waitMs);
@@ -85,7 +94,7 @@ int Serial::Read(uint8_t *ptr, int  count, int waitMs)
 	{
 		while(Available() && (cnt < count))
 		{
-			*(ptr + cnt) = RxBuf::Pop();
+			*(ptr + cnt) = RxBuf->Pop();
 			cnt++;
 		}
 		if((cnt < count) && (waitMs < 0))
@@ -100,6 +109,13 @@ int Serial::Read(uint8_t *ptr, int  count, int waitMs)
 	return cnt;
 }
 
+uint8_t Serial::GetChar(void)
+{
+	if(Available() > 0)
+		return RxBuf->Pop();
+
+	return 0;
+}
 //////////////////////////////////////////////////////////////////////////////
 // Write(uint8_t *ptr, int  count, int waitMs);
 //
@@ -177,10 +193,9 @@ unsigned int Serial::ParseInt(uint8_t radix, int waitMs)
 	uint8_t data;
 	unsigned int value = 0;
 	int cnt = 0;
-	unsigned int startTick = HAL_GetTick();
 
 	// get the character string
-	while(cnt < sizeof(buf))
+	while(cnt < (int)sizeof(buf))
 	{
 		if(!RxBuf->IsEmpty())
 			data = RxBuf->Pop();
@@ -210,35 +225,35 @@ unsigned int Serial::ParseInt(uint8_t radix, int waitMs)
 			cnt = 2;
 		if(buf[0] == 'h')
 			cnt = 1;
-		while((cnt < sizeof(buf)) && (buf[cnt] != 0))
+		while((cnt < (int)sizeof(buf)) && (buf[cnt] != 0))
 		{
 			value = value << 4;
 			if((buf[cnt] >= 'A') && (buf[cnt] <= 'F'))
-				value = value | ((value[cnt] - 'A') + 10);
+				value = value | ((buf[cnt] - 'A') + 10);
 			else if((buf[cnt] >= 'a') && (buf[cnt] <= 'f'))
-				value = value | ((value[cnt] - 'a') + 10);
+				value = value | ((buf[cnt] - 'a') + 10);
 			else if((buf[cnt] >= '0') && (buf[cnt] <= '9'))
-				value = value | (value[cnt] - '0');
+				value = value | (buf[cnt] - '0');
 		}
 	}
 	else if(radix == 10)
 	{
-		while((cnt < sizeof(buf)) && (buf[cnt] != 0))
+		while((cnt < (int)sizeof(buf)) && (buf[cnt] != 0))
 		{
 			value = value * 10;
 			if((buf[cnt] >= '0') && (buf[cnt] <= '9'))
-				value = value | (value[cnt] - '0');
+				value = value | (buf[cnt] - '0');
 		}
 	}
-	else if(radix = 2)
+	else if(radix == 2)
 	{
 		if(buf[cnt] == 'b')
 			cnt = 1;
-		while((cnt < sizeof(buf)) && (buf[cnt] != 0))
+		while((cnt < (int)sizeof(buf)) && (buf[cnt] != 0))
 		{
 			value = value << 1;
 			if((buf[cnt] == '0') || (buf[cnt] == '1'))
-				value = value | ((value[cnt] - '0') & 0x1);
+				value = value | ((buf[cnt] - '0') & 0x1);
 		}
 	}
 

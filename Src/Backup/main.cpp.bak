@@ -121,8 +121,6 @@ int main(void)
 	if (Es2.readVMPP() != -1)
 		Es2.setVMPP(-1, 1); // Disable VMPP regulation to allow charging from any power supply (7V - 23V) and prevent excessive EEPROM writes
 
-	DWT_Delay_Init();
-
 	// initialize Wifi
 	WiFiEsp.init(&huart2);
 

@@ -18,7 +18,7 @@
 class Serial
 {
 public:
-	Serial(UART_HandleTypeDef &uart, int txSize, int rxSize);
+	Serial(UART_HandleTypeDef *uart, int txSize, int rxSize);
 	~Serial();
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ public:
 	//			x		wait x milli-seconds, or till buffer is full
 	//	returns the converted integer.
 	//
-	int ParseInt(uint8_t radix = 10, int waitMs = -1);
+	unsigned int ParseInt(uint8_t radix = 10, int waitMs = -1);
 
 	//////////////////////////////////////////////////////////////////////////////
 	//	void Flush();
@@ -93,10 +93,11 @@ public:
 	void Flush();
 
 	uint8_t Peek();		// read data without popping it from the queue
+
 	uint8_t GetChar();	// simply reads 1 character from the queue
 
 private:
-	UART_HandleTypeDef m_uart;
+	UART_HandleTypeDef *m_uart;
 
 };
 

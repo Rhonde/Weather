@@ -38,6 +38,7 @@ void WiFiEspClass::init(UART_HandleTypeDef* _espUART)
 	LOGINFO("Initializing ESP module");
 
 	HAL_GPIO_WritePin(m_enaPort, m_enaPin, GPIO_PIN_SET);// set enable pin to '1'
+	HAL_GPIO_WritePin(m_resetPort, m_resetPin, GPIO_PIN_SET);	// reset hi
 	HAL_GPIO_WritePin(m_resetPort, m_resetPin, GPIO_PIN_RESET);	// reset low
 	HAL_Delay(10);			// leave it low for 10 mS (TODO: find docs on this)
 	HAL_GPIO_WritePin(m_resetPort, m_resetPin, GPIO_PIN_SET);	// reset hi
